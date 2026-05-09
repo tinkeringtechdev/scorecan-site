@@ -1,1 +1,1 @@
-<?php echo "scorecan is alive — " . date('Y-m-d H:i:s'); ?>
+<?php echo "scorecan alive — " . date('Y-m-d H:i:s'); ?>

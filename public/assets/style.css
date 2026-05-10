@@ -65,7 +65,7 @@ a:hover { color: var(--spc-blue-dark); text-decoration: underline; }
     display: block;
     margin: 0 auto;
     max-width: 100%;        /* never overflow horizontally */
-    max-height: 300px;      /* cap banner height */
+    max-height: 150px;      /* cap banner height */
     width: auto;
     height: auto;           /* preserves aspect ratio */
 }

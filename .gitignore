@@ -1,0 +1,9 @@
+/config.php
+/public/config.php
+/vendor/
+/_lib/
+.DS_Store
+.idea/
+.vscode/
+*.log
+*.sqlite

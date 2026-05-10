@@ -1,5 +1,20 @@
 ---
+# scorecan.com cPanel deployer.
+# Runs after every git pull. Mirrors /public into public_html and /src into
+# public_html/_lib/src (denied to HTTP via _lib/.htaccess).
 deployment:
   tasks:
-    - export DEPLOYPATH=/home/$(whoami)/public_html
-    - /bin/cp index.php $DEPLOYPATH/index.php
+    - export WEBROOT=/home/$(whoami)/public_html
+    - /bin/mkdir -p $WEBROOT/_lib
+    # Mirror the public/ folder into webroot. --delete removes stale files,
+    # but we exclude config.php and _lib so the persistent server config and
+    # vendor libs aren't wiped on each deploy.
+    - /usr/bin/rsync -a --delete --exclude='config.php' --exclude='_lib/' public/ $WEBROOT/
+    # Copy the src/ folder into _lib/src — bootstrap.php will require from there.
+    - /usr/bin/rsync -a --delete src/ $WEBROOT/_lib/src/
+    # Copy schema.sql for first-time imports (non-public via _lib).
+    - /bin/cp -f schema.sql $WEBROOT/_lib/schema.sql
+    # Drop a hard deny on _lib so nothing inside is HTTP-readable.
+    - /bin/echo "Require all denied" > $WEBROOT/_lib/.htaccess
+    # Composer install (PhpSpreadsheet) — silent if composer isn't on PATH.
+    - cd $WEBROOT/_lib && /bin/cp -f /home/$(whoami)/repositories/scorecan-site/composer.json . 2>/dev/null && /usr/local/bin/composer install --no-dev --optimize-autoloader 2>/dev/null || true

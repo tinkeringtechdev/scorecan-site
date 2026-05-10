@@ -1,0 +1,6 @@
+# When the repo is cloned at root and someone hits /scorecan-site/ directly
+# (e.g. local XAMPP), redirect into /public/.
+DirectoryIndex index.php
+RewriteEngine On
+RewriteCond %{REQUEST_URI} !^/scorecan-site/public/
+RewriteRule ^(.*)$ public/$1 [L]

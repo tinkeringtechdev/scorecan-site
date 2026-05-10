@@ -1,0 +1,226 @@
+/* ----------------------------------------------------------
+   scorecan.com — St. Peter's Cricket Carnival 2026
+   Palette inspired by St. Peter's College, Colombo (blue/white/gold).
+   Designed mobile-first; tables collapse to cards on small screens.
+   ---------------------------------------------------------- */
+
+:root {
+    --spc-blue:        #1f3b6b;       /* primary, header bg */
+    --spc-blue-dark:   #15294a;       /* hover, footers */
+    --spc-blue-light:  #2c4f8a;
+    --spc-gold:        #c9a14a;       /* accent */
+    --spc-gold-soft:   #efe2bf;
+    --bg:              #f5f7fb;
+    --card:            #ffffff;
+    --row-alt:         #f1f4fa;
+    --border:          #d8dde6;
+    --text:            #1c2333;
+    --text-muted:      #5a6478;
+    --danger:          #b3261e;
+    --ok:              #2e7d32;
+    --shadow:          0 1px 3px rgba(20, 30, 60, .06), 0 4px 14px rgba(20, 30, 60, .05);
+    --radius:          10px;
+}
+
+* { box-sizing: border-box; }
+html, body {
+    margin: 0;
+    padding: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.45;
+    -webkit-font-smoothing: antialiased;
+}
+
+a { color: var(--spc-blue); text-decoration: none; }
+a:hover { color: var(--spc-blue-dark); text-decoration: underline; }
+
+/* Header --------------------------------------------------- */
+.site-header {
+    background: linear-gradient(135deg, var(--spc-blue) 0%, var(--spc-blue-dark) 100%);
+    color: #fff;
+    padding: 14px 22px;
+    border-bottom: 4px solid var(--spc-gold);
+    box-shadow: var(--shadow);
+}
+.site-header .wrap {
+    max-width: 1200px; margin: 0 auto;
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 16px; flex-wrap: wrap;
+}
+.site-header h1 {
+    font-size: 20px; margin: 0;
+    letter-spacing: .3px;
+}
+.site-header h1 .small { font-weight: 400; opacity: .85; font-size: 14px; }
+.site-header nav a {
+    color: #fff; opacity: .9;
+    margin-left: 16px;
+    font-size: 14px;
+    border-bottom: 2px solid transparent;
+    padding: 4px 0;
+}
+.site-header nav a:hover, .site-header nav a.active {
+    opacity: 1; text-decoration: none;
+    border-bottom-color: var(--spc-gold);
+}
+
+/* Page wrap ------------------------------------------------ */
+.page {
+    max-width: 1200px;
+    margin: 24px auto 60px;
+    padding: 0 18px;
+}
+.page h2 {
+    font-size: 22px; color: var(--spc-blue);
+    margin: 0 0 14px;
+    border-left: 4px solid var(--spc-gold);
+    padding-left: 10px;
+}
+.page h3 {
+    font-size: 17px; color: var(--spc-blue-dark);
+    margin: 22px 0 8px;
+}
+.page p.muted { color: var(--text-muted); font-size: 14px; }
+
+/* Cards & grid --------------------------------------------- */
+.card {
+    background: var(--card);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 16px 18px;
+    margin-bottom: 18px;
+}
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 16px;
+}
+.grid-2 { grid-template-columns: repeat(auto-fit, minmax(420px, 1fr)); }
+
+/* Tables --------------------------------------------------- */
+table.scoretable {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+}
+table.scoretable thead th {
+    background: var(--spc-blue);
+    color: #fff;
+    font-weight: 600;
+    text-align: left;
+    padding: 10px 8px;
+    border: 1px solid var(--spc-blue-dark);
+    white-space: nowrap;
+}
+table.scoretable tbody td {
+    padding: 8px;
+    border-bottom: 1px solid var(--border);
+    border-right: 1px solid var(--border);
+}
+table.scoretable tbody tr:nth-child(odd)  { background: var(--card); }
+table.scoretable tbody tr:nth-child(even) { background: var(--row-alt); }
+table.scoretable tbody td.num { text-align: right; font-variant-numeric: tabular-nums; }
+table.scoretable tbody td.team { font-weight: 600; }
+table.scoretable tbody tr.qualifier td.team::before {
+    content: "▲ ";
+    color: var(--spc-gold);
+}
+table.scoretable .group-title {
+    background: var(--spc-blue-dark);
+    color: var(--spc-gold-soft);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    padding: 6px 8px;
+    font-size: 13px;
+}
+
+/* Forms ---------------------------------------------------- */
+form .row {
+    display: grid;
+    grid-template-columns: 180px 1fr;
+    gap: 10px 14px;
+    margin-bottom: 10px;
+    align-items: center;
+}
+form label { font-weight: 600; color: var(--spc-blue-dark); }
+form input[type="text"], form input[type="number"], form input[type="date"],
+form input[type="time"], form input[type="password"], form select, form textarea {
+    width: 100%; max-width: 360px;
+    padding: 7px 10px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font: inherit; background: #fff;
+}
+form textarea { min-height: 80px; }
+form .actions { margin-top: 14px; }
+.btn {
+    display: inline-block;
+    background: var(--spc-blue);
+    color: #fff;
+    border: none;
+    padding: 9px 18px;
+    border-radius: 6px;
+    font: inherit; font-weight: 600;
+    cursor: pointer;
+    text-decoration: none;
+}
+.btn:hover { background: var(--spc-blue-dark); color: #fff; text-decoration: none; }
+.btn.gold { background: var(--spc-gold); color: #1c1300; }
+.btn.gold:hover { background: #b48c33; color: #1c1300; }
+.btn.ghost { background: transparent; color: var(--spc-blue); border: 1px solid var(--spc-blue); }
+.btn.ghost:hover { background: var(--spc-blue); color: #fff; }
+.btn.danger { background: var(--danger); }
+.btn.small { padding: 5px 10px; font-size: 13px; }
+
+/* Flash messages ------------------------------------------- */
+.flash { padding: 10px 14px; border-radius: 6px; margin-bottom: 14px; font-size: 14px; }
+.flash.ok    { background: #e6f4ea; color: var(--ok);    border: 1px solid #b6dcc0; }
+.flash.error { background: #fce8e6; color: var(--danger); border: 1px solid #f0b4ae; }
+.flash.info  { background: #e3edff; color: var(--spc-blue-dark); border: 1px solid #b9d0f6; }
+
+/* Footer --------------------------------------------------- */
+.site-footer {
+    border-top: 1px solid var(--border);
+    background: #fff;
+    color: var(--text-muted);
+    padding: 14px 22px;
+    text-align: center;
+    font-size: 13px;
+}
+
+/* Knockout bracket ---------------------------------------- */
+.bracket {
+    display: flex;
+    gap: 24px;
+    overflow-x: auto;
+    padding: 12px 0;
+}
+.bracket .round {
+    display: flex; flex-direction: column;
+    justify-content: space-around;
+    min-width: 200px;
+}
+.bracket .match {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--spc-gold);
+    border-radius: 6px;
+    padding: 8px 10px;
+    margin: 12px 0;
+    box-shadow: var(--shadow);
+}
+.bracket .match .team { display:flex; justify-content:space-between; padding:2px 0; }
+.bracket .match .team.win { font-weight: 700; color: var(--spc-blue-dark); }
+
+/* Responsive ----------------------------------------------- */
+@media (max-width: 700px) {
+    .site-header h1 { font-size: 18px; }
+    .site-header nav a { margin-left: 10px; font-size: 13px; }
+    .grid { grid-template-columns: 1fr; }
+    form .row { grid-template-columns: 1fr; }
+    table.scoretable { font-size: 13px; }
+    table.scoretable thead th, table.scoretable tbody td { padding: 6px; }
+}

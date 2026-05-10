@@ -4,7 +4,8 @@
  * URL: /admin/match.php?id=NNN  (or id=new)
  *
  * UI talks "Team 1 / Team 2" and "Innings 1 / Innings 2" — DB columns are still
- * home_*/away_*. team1 ≡ home, team2 ≡ away, with home_batted_first toggling innings.
+ * the home_xxx and away_xxx prefixes. team1 = home, team2 = away,
+ * with home_batted_first toggling which side opened the batting.
  *
  * Tournament date is auto-filled from tournaments.tournament_date — scorer never
  * picks a date manually. Time slot is hidden (legacy column kept in DB).

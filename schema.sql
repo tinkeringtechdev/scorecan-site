@@ -82,10 +82,11 @@ CREATE TABLE matches (
     away_balls_faced    SMALLINT UNSIGNED NULL,
     away_all_out        TINYINT(1) NOT NULL DEFAULT 0,
 
-    winner_team_id      INT UNSIGNED NULL,
-    is_tie              TINYINT(1) NOT NULL DEFAULT 0,
-    status              ENUM('scheduled','in_progress','complete','no_result') NOT NULL DEFAULT 'scheduled',
-    notes               TEXT NULL,
+    winner_team_id        INT UNSIGNED NULL,
+    is_tie                TINYINT(1) NOT NULL DEFAULT 0,
+    decided_by_super_over TINYINT(1) NOT NULL DEFAULT 0,
+    status                ENUM('scheduled','in_progress','complete','no_result') NOT NULL DEFAULT 'scheduled',
+    notes                 TEXT NULL,
 
     created_at          DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at          DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,

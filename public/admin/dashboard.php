@@ -55,9 +55,10 @@ View::flash();
 <div class="grid">
     <div class="card">
         <h3 style="margin-top:0">Match management</h3>
-        <p><a class="btn" href="<?= View::url('admin/match.php?id=new') ?>">+ New match / score entry</a></p>
+        <p><a class="btn" href="<?= View::url('admin/match.php?id=new') ?>">+ Enter match score</a></p>
         <p><a class="btn ghost" href="<?= View::url('admin/fixtures.php') ?>">Fixture map (bulk entry)</a></p>
-        <p><a class="btn gold" href="<?= View::url('admin/import-draw.php') ?>">📷 Import draw from image (AI)</a></p>
+        <p><a class="btn ghost" href="<?= View::url('admin/results.php') ?>">View results</a></p>
+        <p><a class="btn gold" href="<?= View::url('admin/import-draw.php') ?>">📷 AI Import of Teams</a></p>
     </div>
 
     <div class="card">

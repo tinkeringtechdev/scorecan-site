@@ -80,12 +80,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 $matches = $_SESSION['import_draw_matches'] ?? [];
 $csrf    = Auth::csrfToken();
 
-View::header('Import Draw', 'admin');
+View::header('AI Import of Teams', 'admin');
 View::flash();
 ?>
 
 <p><a href="<?= View::url('admin/dashboard.php') ?>">← Dashboard</a></p>
-<h2>Import Draw from Image</h2>
+<h2>AI Import of Teams</h2>
 
 <?php if (!$apiKeySet): ?>
     <div class="flash error">
@@ -100,7 +100,7 @@ View::flash();
         <h3 style="margin-top:0">Step 1 — Upload</h3>
         <p class="muted">Take a clear photo or screenshot of the tournament draw. The AI reads it and lists every match for you to review before committing to the database.</p>
 
-        <form method="post" enctype="multipart/form-data" <?= $apiKeySet ? '' : 'style="opacity:.5;pointer-events:none"' ?>>
+        <form id="upload-form" method="post" enctype="multipart/form-data" <?= $apiKeySet ? '' : 'style="opacity:.5;pointer-events:none"' ?>>
             <input type="hidden" name="_csrf" value="<?= View::e($csrf) ?>">
             <input type="hidden" name="step" value="upload">
             <div class="row">
@@ -109,9 +109,49 @@ View::flash();
             </div>
             <p class="muted" style="font-size:13px">JPG, PNG, GIF or WEBP. Max 5 MB. Processing usually takes 5–15 seconds.</p>
             <div class="actions">
-                <button class="btn">Process image</button>
+                <button class="btn" id="process-btn">Process image</button>
             </div>
         </form>
+
+        <!-- Progress overlay shown while AI is reading the image. -->
+        <div id="progress-overlay" style="display:none;position:fixed;inset:0;background:rgba(15,25,55,0.85);z-index:9999;color:#fff;align-items:center;justify-content:center;flex-direction:column;text-align:center;padding:24px">
+            <div style="display:inline-block;width:64px;height:64px;border:6px solid rgba(255,255,255,.2);border-top-color:#c9a14a;border-radius:50%;animation:spin 1s linear infinite"></div>
+            <h3 id="progress-title" style="margin:18px 0 6px;font-size:22px;color:#fff">Uploading image…</h3>
+            <p id="progress-detail" style="margin:0;color:#cfd6e6;font-size:14px;max-width:380px">Sending the draw to the AI for reading.</p>
+            <p style="margin-top:14px;font-size:12px;color:#8a93a7">This usually takes 5–15 seconds. Don't close this tab.</p>
+        </div>
+        <style>
+            @keyframes spin { to { transform: rotate(360deg); } }
+            #progress-overlay { display: none; }
+            #progress-overlay.show { display: flex !important; }
+        </style>
+        <script>
+            (function () {
+                var form = document.getElementById('upload-form');
+                if (!form) return;
+                var overlay = document.getElementById('progress-overlay');
+                var titleEl = document.getElementById('progress-title');
+                var detailEl = document.getElementById('progress-detail');
+                form.addEventListener('submit', function () {
+                    overlay.classList.add('show');
+                    var btn = document.getElementById('process-btn');
+                    if (btn) { btn.disabled = true; btn.textContent = 'Processing…'; }
+
+                    // Cycle through status messages so the user sees progress.
+                    var stages = [
+                        ['Uploading image…',      'Sending the draw to the AI for reading.'],
+                        ['AI is reading the draw…','Identifying grounds, rounds, and team names.'],
+                        ['Almost done…',          'Tidying up the detected matches.'],
+                    ];
+                    var i = 0;
+                    setInterval(function () {
+                        i = Math.min(i + 1, stages.length - 1);
+                        titleEl.textContent  = stages[i][0];
+                        detailEl.textContent = stages[i][1];
+                    }, 4000);
+                });
+            })();
+        </script>
     </div>
 
     <div class="card">

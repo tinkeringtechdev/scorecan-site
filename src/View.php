@@ -97,7 +97,6 @@ class View {
         $items = [
             ['href' => 'index.php',     'key' => 'home',      'label' => 'Standings'],
             ['href' => 'fixtures.php',  'key' => 'fixtures',  'label' => 'Fixtures'],
-            ['href' => 'results.php',   'key' => 'results',   'label' => 'Results'],
             ['href' => 'knockouts.php', 'key' => 'knockouts', 'label' => 'Knockouts'],
             ['href' => 'admin/',        'key' => 'admin',     'label' => 'Admin'],
         ];

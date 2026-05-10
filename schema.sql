@@ -1,6 +1,7 @@
--- scorecan.com — St. Peter's Cricket Carnival 2026
+-- scorecan.com — Peterite Cricket Carnival 2026
 -- MySQL 8 / MariaDB 10.4+ compatible.
--- Idempotent: drops & recreates everything. DON'T run on production once data exists.
+-- Idempotent: drops & recreates everything. DON'T run on production once data exists
+-- (use migrations/ instead for incremental upgrades).
 
 SET NAMES utf8mb4;
 SET time_zone = '+05:30';
@@ -21,7 +22,10 @@ SET FOREIGN_KEY_CHECKS = 1;
 CREATE TABLE tournaments (
     id              INT UNSIGNED NOT NULL AUTO_INCREMENT,
     name            VARCHAR(180) NOT NULL,
+    subtitle        VARCHAR(180) NULL,                 -- e.g. "Cecil Perera Memorial Trophy"
+    organizer       VARCHAR(180) NULL,                 -- e.g. "SPCOBA East Coast USA"
     year            SMALLINT UNSIGNED NOT NULL,
+    tournament_date DATE NULL,                         -- single-day tournament date; auto-fills score-entry form
     overs_per_side  TINYINT UNSIGNED NOT NULL DEFAULT 5,
     team_size       TINYINT UNSIGNED NOT NULL DEFAULT 6,
     is_active       TINYINT(1) NOT NULL DEFAULT 1,
@@ -39,7 +43,7 @@ CREATE TABLE teams (
     name            VARCHAR(120) NOT NULL,
     short_code      VARCHAR(8) NULL,
     group_letter    CHAR(1) NOT NULL,                     -- A..F
-    seed            TINYINT UNSIGNED NULL,                -- optional manual seed
+    seed            TINYINT UNSIGNED NULL,
     PRIMARY KEY (id),
     UNIQUE KEY ux_tournament_name (tournament_id, name),
     KEY idx_tournament_group (tournament_id, group_letter),
@@ -49,25 +53,29 @@ CREATE TABLE teams (
 -- ----------------------------------------------------------
 -- matches
 -- ----------------------------------------------------------
+-- Naming: schema keeps "home"/"away" for backward compat; UI displays "Team 1"/"Team 2".
+-- "team1_batted_first" tracks innings order (which side opened the batting).
 CREATE TABLE matches (
     id                  INT UNSIGNED NOT NULL AUTO_INCREMENT,
     tournament_id       INT UNSIGNED NOT NULL,
     stage               ENUM('group','QF','SF','F','3P') NOT NULL DEFAULT 'group',
-    bracket_position    TINYINT UNSIGNED NULL,           -- 1..4 for QF, 1..2 for SF, 1 for F
+    bracket_position    TINYINT UNSIGNED NULL,
     match_date          DATE NULL,
-    ground              TINYINT UNSIGNED NULL,           -- 1..N
-    time_slot           VARCHAR(16) NULL,                -- e.g. "08:00"
+    ground              TINYINT UNSIGNED NULL,
+    round_number        TINYINT UNSIGNED NULL,            -- 1..N within a ground (replaces time_slot)
+    time_slot           VARCHAR(16) NULL,                 -- legacy; kept for backward compat
 
-    home_team_id        INT UNSIGNED NULL,
-    away_team_id        INT UNSIGNED NULL,
-    -- Knockouts: instead of fixed team IDs, reference winners of earlier matches
+    home_team_id        INT UNSIGNED NULL,                -- aka "Team 1" in UI
+    away_team_id        INT UNSIGNED NULL,                -- aka "Team 2" in UI
     home_source_match   INT UNSIGNED NULL,
     away_source_match   INT UNSIGNED NULL,
 
+    home_batted_first   TINYINT(1) NOT NULL DEFAULT 1,    -- 1 = home (Team 1) batted first; 0 = away batted first
+
     home_runs           SMALLINT UNSIGNED NULL,
     home_wickets        TINYINT UNSIGNED NULL,
-    home_balls_faced    SMALLINT UNSIGNED NULL,           -- overs * 6 + extra
-    home_all_out        TINYINT(1) NOT NULL DEFAULT 0,    -- if 1, balls treated as full quota for NRR
+    home_balls_faced    SMALLINT UNSIGNED NULL,
+    home_all_out        TINYINT(1) NOT NULL DEFAULT 0,
 
     away_runs           SMALLINT UNSIGNED NULL,
     away_wickets        TINYINT UNSIGNED NULL,
@@ -87,6 +95,7 @@ CREATE TABLE matches (
     KEY idx_match_date (match_date),
     KEY idx_stage (stage),
     KEY idx_status (status),
+    KEY idx_ground_round (ground, round_number),
     CONSTRAINT fk_matches_tournament FOREIGN KEY (tournament_id) REFERENCES tournaments(id) ON DELETE CASCADE,
     CONSTRAINT fk_matches_home FOREIGN KEY (home_team_id) REFERENCES teams(id) ON DELETE SET NULL,
     CONSTRAINT fk_matches_away FOREIGN KEY (away_team_id) REFERENCES teams(id) ON DELETE SET NULL,
@@ -109,7 +118,7 @@ CREATE TABLE admins (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ----------------------------------------------------------
--- audit_log — every match save (and a few other ops) gets a row here
+-- audit_log
 -- ----------------------------------------------------------
 CREATE TABLE audit_log (
     id              BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
@@ -129,17 +138,12 @@ CREATE TABLE audit_log (
 -- SEED DATA
 -- ==========================================================
 
--- One tournament: St. Peter's Cricket Carnival 2026
-INSERT INTO tournaments (id, name, year, overs_per_side, team_size, is_active)
-VALUES (1, "St. Peter's Cricket Carnival 2026", 2026, 5, 6, 1);
+INSERT INTO tournaments (id, name, subtitle, organizer, year, tournament_date, overs_per_side, team_size, is_active)
+VALUES (1, 'Peterite Cricket Carnival 2026', 'Cecil Perera Memorial Trophy', 'SPCOBA East Coast USA',
+        2026, NULL, 5, 6, 1);
 
--- 16 placeholder teams across groups A–D (rename via admin UI when team list is finalised).
-INSERT INTO teams (tournament_id, name, group_letter, seed) VALUES
-    (1, 'Team A1', 'A', 1), (1, 'Team A2', 'A', 2), (1, 'Team A3', 'A', 3), (1, 'Team A4', 'A', 4),
-    (1, 'Team B1', 'B', 1), (1, 'Team B2', 'B', 2), (1, 'Team B3', 'B', 3), (1, 'Team B4', 'B', 4),
-    (1, 'Team C1', 'C', 1), (1, 'Team C2', 'C', 2), (1, 'Team C3', 'C', 3), (1, 'Team C4', 'C', 4),
-    (1, 'Team D1', 'D', 1), (1, 'Team D2', 'D', 2), (1, 'Team D3', 'D', 3), (1, 'Team D4', 'D', 4);
+-- No teams seeded — admin adds them manually on tournament day.
 
--- Default admin: username `admin`, password `changeme`. CHANGE ON FIRST LOGIN.
+-- Default admin: username `admin`, password `changeme`. CHANGE ON FIRST LOGIN via /admin/change-password.php.
 INSERT INTO admins (username, password_hash, display_name) VALUES
     ('admin', '$2b$12$3YgmCoJUi0DIhNVdzunOru1rnEt93RK93PKCX7HVQoLPq0Ni07gnS', 'Default Admin');

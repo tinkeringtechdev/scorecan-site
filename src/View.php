@@ -1,27 +1,23 @@
 <?php
 /**
- * Lightweight view helpers — escape, render header/footer, build nav.
+ * View helpers — escape, render banner+nav header, render footer with social links.
  *
  * URL handling:
  *   View::base() returns the URL prefix to /public/ (the site root).
  *   - Local XAMPP: "/scorecan-site/public/"
  *   - Production cPanel (where /public maps to webroot): "/"
- *   Computed once from $_SERVER['SCRIPT_NAME'] so it works regardless of subdir.
  */
 
 class View {
 
     private static ?string $base = null;
+    private static ?array  $tournament = null;   // cached for the request
 
     public static function base(): string {
         if (self::$base !== null) return self::$base;
-        $script = $_SERVER['SCRIPT_NAME'] ?? '/index.php';   // e.g. /scorecan-site/public/admin/login.php
+        $script = $_SERVER['SCRIPT_NAME'] ?? '/index.php';
         $i = strpos($script, '/public/');
-        if ($i !== false) {
-            self::$base = substr($script, 0, $i) . '/public/';
-        } else {
-            self::$base = '/';
-        }
+        self::$base = $i !== false ? substr($script, 0, $i) . '/public/' : '/';
         return self::$base;
     }
 
@@ -33,8 +29,25 @@ class View {
         return htmlspecialchars((string)$s, ENT_QUOTES | ENT_HTML5, 'UTF-8');
     }
 
+    /** Cached active-tournament row, used in header/footer. */
+    public static function tournament(): array {
+        if (self::$tournament !== null) return self::$tournament;
+        try {
+            $row = Db::one('SELECT * FROM tournaments WHERE is_active = 1 ORDER BY id DESC LIMIT 1');
+        } catch (Throwable $e) {
+            $row = null;
+        }
+        self::$tournament = $row ?? [
+            'name' => 'Peterite Cricket Carnival 2026',
+            'subtitle' => 'Cecil Perera Memorial Trophy',
+            'organizer' => 'SPCOBA East Coast USA',
+        ];
+        return self::$tournament;
+    }
+
     public static function header(string $pageTitle, string $activeNav = '', bool $autoRefresh = false): void {
-        $title = $pageTitle === '' ? 'scorecan' : ($pageTitle . ' · scorecan');
+        $t = self::tournament();
+        $pageDoc = $pageTitle === '' ? $t['name'] : ($pageTitle . ' · ' . $t['name']);
         $base = self::base();
         ?><!DOCTYPE html>
 <html lang="en">
@@ -44,40 +57,56 @@ class View {
     <?php if ($autoRefresh): ?>
     <meta http-equiv="refresh" content="60">
     <?php endif; ?>
-    <title><?= self::e($title) ?></title>
-    <link rel="stylesheet" href="<?= self::e($base) ?>assets/style.css?v=1">
-    <script src="<?= self::e($base) ?>assets/app.js?v=1" defer></script>
+    <title><?= self::e($pageDoc) ?></title>
+    <link rel="stylesheet" href="<?= self::e($base) ?>assets/style.css?v=2">
+    <script src="<?= self::e($base) ?>assets/app.js?v=2" defer></script>
 </head>
 <body>
-<header class="site-header">
-    <div class="wrap">
-        <h1><a href="<?= self::e($base) ?>" style="color:#fff;text-decoration:none">St. Peter's Cricket Carnival 2026</a> <span class="small">· scorecan.com</span></h1>
-        <nav>
-            <?php
-            $items = [
-                ['href' => 'index.php',     'key' => 'home',      'label' => 'Standings'],
-                ['href' => 'fixtures.php',  'key' => 'fixtures',  'label' => 'Fixtures'],
-                ['href' => 'results.php',   'key' => 'results',   'label' => 'Results'],
-                ['href' => 'knockouts.php', 'key' => 'knockouts', 'label' => 'Knockouts'],
-                ['href' => 'admin/',        'key' => 'admin',     'label' => 'Admin'],
-            ];
-            foreach ($items as $it):
-                $cls = $it['key'] === $activeNav ? ' class="active"' : '';
-                ?><a href="<?= self::e($base . $it['href']) ?>"<?= $cls ?>><?= self::e($it['label']) ?></a><?php
-            endforeach;
-            ?>
-        </nav>
-    </div>
+<header class="site-banner">
+    <a href="<?= self::e($base) ?>">
+        <img src="<?= self::e($base) ?>assets/img/peters_banner.png"
+             alt="<?= self::e($t['name']) ?> — <?= self::e($t['subtitle'] ?? '') ?>">
+    </a>
 </header>
+<nav class="site-nav">
+    <div class="wrap">
+        <?php
+        $items = [
+            ['href' => 'index.php',     'key' => 'home',      'label' => 'Standings'],
+            ['href' => 'fixtures.php',  'key' => 'fixtures',  'label' => 'Fixtures'],
+            ['href' => 'results.php',   'key' => 'results',   'label' => 'Results'],
+            ['href' => 'knockouts.php', 'key' => 'knockouts', 'label' => 'Knockouts'],
+            ['href' => 'admin/',        'key' => 'admin',     'label' => 'Admin'],
+        ];
+        foreach ($items as $it):
+            $cls = $it['key'] === $activeNav ? ' class="active"' : '';
+            ?><a href="<?= self::e($base . $it['href']) ?>"<?= $cls ?>><?= self::e($it['label']) ?></a><?php
+        endforeach;
+        ?>
+    </div>
+</nav>
 <main class="page">
         <?php
     }
 
     public static function footer(): void {
+        $t = self::tournament();
         ?>
 </main>
 <footer class="site-footer">
-    St. Peter's Cricket Carnival 2026 · scorecan.com · Last loaded <?= self::e(date('D, d M Y H:i')) ?>
+    <div class="socials">
+        <a href="https://www.facebook.com/SPCOBA/" target="_blank" rel="noopener" aria-label="Facebook">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.99 3.657 9.128 8.438 9.879V14.89H7.898V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.563V12h2.773l-.443 2.89h-2.33v6.989C18.343 21.128 22 16.99 22 12z"/></svg>
+            Facebook
+        </a>
+        <a href="https://www.instagram.com/spcoba.eastcoast" target="_blank" rel="noopener" aria-label="Instagram">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 1.366.062 2.633.331 3.608 1.308.975.975 1.246 2.242 1.308 3.608.058 1.266.069 1.646.069 4.85s-.012 3.584-.07 4.85c-.062 1.366-.333 2.633-1.308 3.608-.975.975-2.242 1.246-3.608 1.308-1.266.058-1.646.07-4.85.07s-3.584-.012-4.85-.07c-1.366-.062-2.633-.333-3.608-1.308-.975-.975-1.246-2.242-1.308-3.608C2.175 15.747 2.163 15.367 2.163 12s.012-3.584.07-4.85C2.295 5.784 2.566 4.517 3.541 3.542 4.516 2.567 5.783 2.296 7.149 2.234 8.415 2.176 8.795 2.163 12 2.163zm0 1.836c-3.155 0-3.51.012-4.752.069-1.054.048-1.625.222-2.005.371-.504.196-.866.43-1.247.81-.38.382-.614.744-.81 1.247-.149.38-.323.95-.371 2.005-.057 1.243-.069 1.598-.069 4.752s.012 3.51.069 4.752c.048 1.054.222 1.625.371 2.005.196.504.43.866.81 1.247.382.38.744.614 1.247.81.38.149.95.323 2.005.371 1.243.057 1.598.069 4.752.069s3.51-.012 4.752-.069c1.054-.048 1.625-.222 2.005-.371.504-.196.866-.43 1.247-.81.38-.382.614-.744.81-1.247.149-.38.323-.95.371-2.005.057-1.243.069-1.598.069-4.752s-.012-3.51-.069-4.752c-.048-1.054-.222-1.625-.371-2.005-.196-.504-.43-.866-.81-1.247-.382-.38-.744-.614-1.247-.81-.38-.149-.95-.323-2.005-.371-1.243-.057-1.598-.069-4.752-.069zm0 3.139a4.862 4.862 0 1 1 0 9.724 4.862 4.862 0 0 1 0-9.724zm0 1.836a3.026 3.026 0 1 0 0 6.052 3.026 3.026 0 0 0 0-6.052zm5.07-2.012a1.137 1.137 0 1 1 0 2.274 1.137 1.137 0 0 1 0-2.274z"/></svg>
+            Instagram
+        </a>
+    </div>
+    <?= self::e($t['name']) ?><?php if (!empty($t['subtitle'])): ?> · <?= self::e($t['subtitle']) ?><?php endif; ?>
+    <?php if (!empty($t['organizer'])): ?> · <?= self::e($t['organizer']) ?><?php endif; ?>
+    · <a href="https://scorecan.com">scorecan.com</a>
 </footer>
 </body>
 </html>
@@ -89,6 +118,7 @@ class View {
         ?>
         <div class="card">
             <div class="group-title">Group <?= self::e($letter) ?></div>
+            <div class="table-wrap">
             <table class="scoretable">
                 <thead>
                 <tr>
@@ -117,6 +147,7 @@ class View {
                 <?php endif; ?>
                 </tbody>
             </table>
+            </div>
         </div>
         <?php
     }

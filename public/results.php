@@ -1,6 +1,7 @@
 <?php
 /**
- * Public results page — completed matches only, newest first, with full scorelines.
+ * Public results page — completed matches, newest first.
+ * Shows scoreline ordered as "Innings 1 → Innings 2" using the home_batted_first flag.
  */
 require __DIR__ . '/bootstrap.php';
 
@@ -14,7 +15,7 @@ $rows = Db::all("
     LEFT JOIN teams at ON at.id = m.away_team_id
     LEFT JOIN teams wt ON wt.id = m.winner_team_id
     WHERE m.tournament_id = :tid AND m.status IN ('complete','no_result')
-    ORDER BY m.match_date DESC, m.time_slot DESC
+    ORDER BY m.match_date DESC, m.round_number DESC, m.id DESC
 ", [':tid' => $tournamentId]);
 
 View::header('Results', 'results', true);
@@ -26,38 +27,44 @@ View::header('Results', 'results', true);
     <div class="card"><p class="muted" style="margin:0">No completed matches yet.</p></div>
 <?php else: ?>
     <div class="card">
+        <div class="table-wrap">
         <table class="scoretable">
             <thead>
             <tr>
-                <th>Date</th><th>Stage</th><th>Match</th>
-                <th>Home</th><th>Away</th><th>Result</th>
+                <th>Date</th><th>Stage</th>
+                <th>Innings 1</th><th>Innings 2</th><th>Result</th>
             </tr>
             </thead>
             <tbody>
-            <?php foreach ($rows as $m): ?>
+            <?php foreach ($rows as $m):
+                $homeFirst = ((int)($m['home_batted_first'] ?? 1)) === 1;
+                $first  = $homeFirst ? ['name' => $m['home_name'] ?? '?', 'r' => $m['home_runs'], 'w' => $m['home_wickets'], 'b' => $m['home_balls_faced']]
+                                     : ['name' => $m['away_name'] ?? '?', 'r' => $m['away_runs'], 'w' => $m['away_wickets'], 'b' => $m['away_balls_faced']];
+                $second = $homeFirst ? ['name' => $m['away_name'] ?? '?', 'r' => $m['away_runs'], 'w' => $m['away_wickets'], 'b' => $m['away_balls_faced']]
+                                     : ['name' => $m['home_name'] ?? '?', 'r' => $m['home_runs'], 'w' => $m['home_wickets'], 'b' => $m['home_balls_faced']];
+            ?>
                 <tr>
                     <td><?= View::e($m['match_date'] ? date('d M', strtotime($m['match_date'])) : '—') ?></td>
                     <td><?= View::e($m['stage']) ?></td>
-                    <td class="team"><?= View::e(($m['home_name'] ?? '?') . ' vs ' . ($m['away_name'] ?? '?')) ?></td>
-                    <td class="num">
-                        <?= (int)$m['home_runs'] ?>/<?= (int)$m['home_wickets'] ?>
-                        (<?= View::e(Standings::ballsToOvers((int)$m['home_balls_faced'])) ?>)
+                    <td>
+                        <strong><?= View::e($first['name']) ?></strong>
+                        <span class="muted"><?= (int)$first['r'] ?>/<?= (int)$first['w'] ?>
+                            (<?= View::e(Standings::ballsToOvers((int)$first['b'])) ?>)</span>
                     </td>
-                    <td class="num">
-                        <?= (int)$m['away_runs'] ?>/<?= (int)$m['away_wickets'] ?>
-                        (<?= View::e(Standings::ballsToOvers((int)$m['away_balls_faced'])) ?>)
+                    <td>
+                        <strong><?= View::e($second['name']) ?></strong>
+                        <span class="muted"><?= (int)$second['r'] ?>/<?= (int)$second['w'] ?>
+                            (<?= View::e(Standings::ballsToOvers((int)$second['b'])) ?>)</span>
                     </td>
                     <td>
                         <?php if ($m['status'] === 'no_result'): ?>
                             <em>No result</em>
                         <?php elseif ($m['is_tie']): ?>
                             <em>Tied</em>
-                        <?php elseif ($m['winner_name']): ?>
-                            <strong><?= View::e($m['winner_name']) ?></strong> won
-                            <?php
-                            // Compute margin
+                        <?php elseif ($m['winner_name']):
                             $diff = abs((int)$m['home_runs'] - (int)$m['away_runs']);
-                            ?>
+                        ?>
+                            <strong><?= View::e($m['winner_name']) ?></strong> won
                             <span class="muted">by <?= (int)$diff ?> run<?= $diff === 1 ? '' : 's' ?></span>
                         <?php endif; ?>
                         <?php if (!empty($m['notes'])): ?>
@@ -68,6 +75,7 @@ View::header('Results', 'results', true);
             <?php endforeach; ?>
             </tbody>
         </table>
+        </div>
     </div>
 <?php endif; ?>
 

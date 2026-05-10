@@ -38,21 +38,30 @@ View::header('Standings', 'home', true);
     <div class="card"><p class="muted" style="margin:0">No matches completed yet.</p></div>
 <?php else: ?>
     <div class="card">
+        <div class="table-wrap">
         <table class="scoretable">
             <thead>
-                <tr><th>Date</th><th>Match</th><th>Score</th><th>Result</th></tr>
+                <tr><th>Date</th><th>Innings 1</th><th>Innings 2</th><th>Result</th></tr>
             </thead>
             <tbody>
-            <?php foreach ($recent as $m): ?>
+            <?php foreach ($recent as $m):
+                $homeFirst = ((int)($m['home_batted_first'] ?? 1)) === 1;
+                $first  = $homeFirst ? ['n' => $m['home_name'], 'r' => $m['home_runs'], 'w' => $m['home_wickets'], 'b' => $m['home_balls_faced']]
+                                     : ['n' => $m['away_name'], 'r' => $m['away_runs'], 'w' => $m['away_wickets'], 'b' => $m['away_balls_faced']];
+                $second = $homeFirst ? ['n' => $m['away_name'], 'r' => $m['away_runs'], 'w' => $m['away_wickets'], 'b' => $m['away_balls_faced']]
+                                     : ['n' => $m['home_name'], 'r' => $m['home_runs'], 'w' => $m['home_wickets'], 'b' => $m['home_balls_faced']];
+            ?>
                 <tr>
                     <td><?= View::e(date('D d M', strtotime($m['match_date'] ?? $m['updated_at']))) ?></td>
-                    <td class="team"><?= View::e($m['home_name'] . ' vs ' . $m['away_name']) ?></td>
                     <td>
-                        <?= (int)$m['home_runs'] ?>/<?= (int)$m['home_wickets'] ?>
-                        (<?= View::e(Standings::ballsToOvers((int)$m['home_balls_faced'])) ?>)
-                        &mdash;
-                        <?= (int)$m['away_runs'] ?>/<?= (int)$m['away_wickets'] ?>
-                        (<?= View::e(Standings::ballsToOvers((int)$m['away_balls_faced'])) ?>)
+                        <strong><?= View::e($first['n']) ?></strong>
+                        <span class="muted"><?= (int)$first['r'] ?>/<?= (int)$first['w'] ?>
+                          (<?= View::e(Standings::ballsToOvers((int)$first['b'])) ?>)</span>
+                    </td>
+                    <td>
+                        <strong><?= View::e($second['n']) ?></strong>
+                        <span class="muted"><?= (int)$second['r'] ?>/<?= (int)$second['w'] ?>
+                          (<?= View::e(Standings::ballsToOvers((int)$second['b'])) ?>)</span>
                     </td>
                     <td>
                         <?php if ($m['is_tie']): ?>
@@ -67,6 +76,7 @@ View::header('Standings', 'home', true);
             <?php endforeach; ?>
             </tbody>
         </table>
+        </div>
     </div>
 <?php endif; ?>
 

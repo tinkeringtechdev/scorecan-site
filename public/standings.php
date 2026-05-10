@@ -20,6 +20,7 @@ View::header('Standings', 'home', true);
 ?>
 <div class="card">
     <div class="group-title">Group <?= View::e($letter) ?></div>
+    <div class="table-wrap">
     <table class="scoretable">
         <thead>
         <tr>
@@ -51,6 +52,7 @@ View::header('Standings', 'home', true);
         <?php endforeach; ?>
         </tbody>
     </table>
+    </div>
 </div>
 <?php endforeach; ?>
 

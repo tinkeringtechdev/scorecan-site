@@ -1,14 +1,14 @@
 /* ----------------------------------------------------------
-   scorecan.com — St. Peter's Cricket Carnival 2026
-   Palette inspired by St. Peter's College, Colombo (blue/white/gold).
-   Designed mobile-first; tables collapse to cards on small screens.
+   scorecan.com — Peterite Cricket Carnival 2026
+   Palette: St. Peter's College blue + gold + white.
+   Mobile-first; banner scales; tables stay readable.
    ---------------------------------------------------------- */
 
 :root {
-    --spc-blue:        #1f3b6b;       /* primary, header bg */
-    --spc-blue-dark:   #15294a;       /* hover, footers */
+    --spc-blue:        #1f3b6b;
+    --spc-blue-dark:   #15294a;
     --spc-blue-light:  #2c4f8a;
-    --spc-gold:        #c9a14a;       /* accent */
+    --spc-gold:        #c9a14a;
     --spc-gold-soft:   #efe2bf;
     --bg:              #f5f7fb;
     --card:            #ffffff;
@@ -27,42 +27,75 @@ html, body {
     margin: 0;
     padding: 0;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-    background: var(--bg);
     color: var(--text);
     line-height: 1.45;
     -webkit-font-smoothing: antialiased;
+    min-height: 100vh;
+}
+
+/* Background watermark — peters_bknd.png as fixed full-bleed wash. */
+body {
+    background-color: var(--bg);
+    background-image: url('img/peters_bknd.png');
+    background-attachment: fixed;
+    background-position: center center;
+    background-repeat: no-repeat;
+    background-size: cover;
+}
+/* Soft wash so cards stay readable on top of the busy bg. */
+body::before {
+    content: "";
+    position: fixed; inset: 0;
+    background: rgba(245, 247, 251, 0.78);
+    z-index: -1;
 }
 
 a { color: var(--spc-blue); text-decoration: none; }
 a:hover { color: var(--spc-blue-dark); text-decoration: underline; }
 
-/* Header --------------------------------------------------- */
-.site-header {
-    background: linear-gradient(135deg, var(--spc-blue) 0%, var(--spc-blue-dark) 100%);
-    color: #fff;
-    padding: 14px 22px;
+/* Banner ---------------------------------------------------- */
+.site-banner {
+    background: #ffffff;
     border-bottom: 4px solid var(--spc-gold);
+    text-align: center;
+    padding: 0;
     box-shadow: var(--shadow);
 }
-.site-header .wrap {
-    max-width: 1200px; margin: 0 auto;
-    display: flex; align-items: center; justify-content: space-between;
-    gap: 16px; flex-wrap: wrap;
+.site-banner img {
+    display: block;
+    width: 100%;
+    max-width: 1400px;
+    margin: 0 auto;
+    height: auto;
 }
-.site-header h1 {
-    font-size: 20px; margin: 0;
-    letter-spacing: .3px;
+
+/* Nav strip below banner ----------------------------------- */
+.site-nav {
+    background: linear-gradient(135deg, var(--spc-blue) 0%, var(--spc-blue-dark) 100%);
+    color: #fff;
+    border-bottom: 1px solid var(--spc-blue-dark);
 }
-.site-header h1 .small { font-weight: 400; opacity: .85; font-size: 14px; }
-.site-header nav a {
-    color: #fff; opacity: .9;
-    margin-left: 16px;
+.site-nav .wrap {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 8px 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 4px;
+}
+.site-nav a {
+    color: #fff; opacity: .92;
+    padding: 8px 14px;
     font-size: 14px;
+    font-weight: 500;
+    border-radius: 4px;
     border-bottom: 2px solid transparent;
-    padding: 4px 0;
 }
-.site-header nav a:hover, .site-header nav a.active {
+.site-nav a:hover, .site-nav a.active {
     opacity: 1; text-decoration: none;
+    background: rgba(255,255,255,.10);
     border-bottom-color: var(--spc-gold);
 }
 
@@ -100,10 +133,12 @@ a:hover { color: var(--spc-blue-dark); text-decoration: underline; }
 .grid-2 { grid-template-columns: repeat(auto-fit, minmax(420px, 1fr)); }
 
 /* Tables --------------------------------------------------- */
+.table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
 table.scoretable {
     width: 100%;
     border-collapse: collapse;
     font-size: 14px;
+    min-width: 480px;       /* ensures horizontal scroll on tiny screens */
 }
 table.scoretable thead th {
     background: var(--spc-blue);
@@ -136,6 +171,48 @@ table.scoretable .group-title {
     padding: 6px 8px;
     font-size: 13px;
 }
+
+/* Fixture map grid ----------------------------------------- */
+.fixture-map {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    margin-top: 8px;
+}
+.fixture-map table {
+    border-collapse: collapse;
+    width: 100%;
+    min-width: 720px;
+}
+.fixture-map th, .fixture-map td {
+    border: 1px solid var(--border);
+    padding: 8px 10px;
+    vertical-align: middle;
+    text-align: center;
+}
+.fixture-map th {
+    background: var(--spc-blue);
+    color: #fff;
+    font-weight: 600;
+}
+.fixture-map td.row-label {
+    background: var(--spc-blue-dark);
+    color: #fff;
+    font-weight: 600;
+    width: 80px;
+}
+.fixture-map td .vs {
+    color: var(--text-muted);
+    margin: 0 4px;
+    font-size: 12px;
+    text-transform: uppercase;
+}
+.fixture-map td.has-match {
+    background: #fffbe6;
+}
+.fixture-map td.complete {
+    background: #e6f4ea;
+}
+.fixture-map a { font-weight: 600; }
 
 /* Forms ---------------------------------------------------- */
 form .row {
@@ -175,6 +252,19 @@ form .actions { margin-top: 14px; }
 .btn.danger { background: var(--danger); }
 .btn.small { padding: 5px 10px; font-size: 13px; }
 
+/* Innings pill --------------------------------------------- */
+.innings-pill {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .5px;
+    text-transform: uppercase;
+}
+.innings-pill.first  { background: var(--spc-blue); color: #fff; }
+.innings-pill.second { background: var(--spc-gold); color: #1c1300; }
+
 /* Flash messages ------------------------------------------- */
 .flash { padding: 10px 14px; border-radius: 6px; margin-bottom: 14px; font-size: 14px; }
 .flash.ok    { background: #e6f4ea; color: var(--ok);    border: 1px solid #b6dcc0; }
@@ -184,12 +274,32 @@ form .actions { margin-top: 14px; }
 /* Footer --------------------------------------------------- */
 .site-footer {
     border-top: 1px solid var(--border);
-    background: #fff;
+    background: rgba(255, 255, 255, 0.92);
     color: var(--text-muted);
-    padding: 14px 22px;
+    padding: 18px;
     text-align: center;
     font-size: 13px;
 }
+.site-footer .socials {
+    margin: 0 0 8px;
+    display: flex;
+    justify-content: center;
+    gap: 14px;
+    flex-wrap: wrap;
+}
+.site-footer .socials a {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border-radius: 999px;
+    background: var(--spc-blue);
+    color: #fff;
+    font-weight: 600;
+    font-size: 13px;
+}
+.site-footer .socials a:hover { background: var(--spc-blue-dark); text-decoration: none; }
+.site-footer .socials svg { width: 16px; height: 16px; fill: currentColor; }
 
 /* Knockout bracket ---------------------------------------- */
 .bracket {
@@ -216,11 +326,16 @@ form .actions { margin-top: 14px; }
 .bracket .match .team.win { font-weight: 700; color: var(--spc-blue-dark); }
 
 /* Responsive ----------------------------------------------- */
-@media (max-width: 700px) {
-    .site-header h1 { font-size: 18px; }
-    .site-header nav a { margin-left: 10px; font-size: 13px; }
+@media (max-width: 740px) {
+    .site-nav .wrap { padding: 6px 8px; }
+    .site-nav a { padding: 6px 10px; font-size: 13px; }
     .grid { grid-template-columns: 1fr; }
     form .row { grid-template-columns: 1fr; }
-    table.scoretable { font-size: 13px; }
-    table.scoretable thead th, table.scoretable tbody td { padding: 6px; }
+    .page { margin-top: 14px; padding: 0 12px; }
+    .page h2 { font-size: 20px; }
+    .card { padding: 12px; }
+    table.scoretable thead th, table.scoretable tbody td { padding: 6px; font-size: 13px; }
+}
+@media (max-width: 480px) {
+    .site-nav a { padding: 5px 8px; font-size: 12px; }
 }

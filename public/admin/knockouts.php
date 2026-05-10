@@ -109,7 +109,7 @@ function renderRound(string $title, array $matches, array $teams, string $csrf) 
                     <input type="hidden" name="action" value="override">
                     <input type="hidden" name="match_id" value="<?= (int)$m['id'] ?>">
                     <div class="row">
-                        <label>Home team</label>
+                        <label>Team 1</label>
                         <select name="home_team_id">
                             <option value="">— Source from earlier match —</option>
                             <?php foreach ($teams as $t):
@@ -120,7 +120,7 @@ function renderRound(string $title, array $matches, array $teams, string $csrf) 
                         </select>
                     </div>
                     <div class="row">
-                        <label>Away team</label>
+                        <label>Team 2</label>
                         <select name="away_team_id">
                             <option value="">— Source from earlier match —</option>
                             <?php foreach ($teams as $t):

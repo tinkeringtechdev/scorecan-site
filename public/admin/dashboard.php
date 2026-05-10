@@ -25,25 +25,38 @@ View::flash();
 
 <h2>Admin Dashboard</h2>
 <p class="muted">Signed in as <strong><?= View::e(Auth::user()['display_name']) ?></strong>
+   · <a href="<?= View::url('admin/change-password.php') ?>">Change password</a>
    · <a href="<?= View::url('admin/logout.php') ?>">Sign out</a></p>
 
 <div class="card">
-    <h3 style="margin-top:0"><?= View::e($tournament['name']) ?></h3>
-    <p>Overs per side: <strong><?= (int)$tournament['overs_per_side'] ?></strong> ·
-       Team size: <strong><?= (int)$tournament['team_size'] ?></strong></p>
+    <h3 style="margin-top:0"><?= View::e($tournament['name']) ?>
+        <?php if (!empty($tournament['subtitle'])): ?>
+            <span class="muted" style="font-weight:normal;font-size:14px">· <?= View::e($tournament['subtitle']) ?></span>
+        <?php endif; ?>
+    </h3>
+    <p>
+        <?php if (!empty($tournament['tournament_date'])): ?>
+            <strong><?= View::e(date('D, d M Y', strtotime($tournament['tournament_date']))) ?></strong> ·
+        <?php else: ?>
+            <span class="muted">Date not set — </span><a href="<?= View::url('admin/settings.php') ?>">set the tournament date</a> ·
+        <?php endif; ?>
+        Overs per side: <strong><?= (int)$tournament['overs_per_side'] ?></strong> ·
+        Team size: <strong><?= (int)$tournament['team_size'] ?></strong>
+    </p>
     <p>
         Teams: <strong><?= $counts['teams'] ?></strong>
         · Scheduled: <strong><?= $counts['scheduled'] ?></strong>
         · In progress: <strong><?= $counts['inprogress'] ?></strong>
         · Completed: <strong><?= $counts['complete'] ?></strong>
     </p>
+    <p><a class="btn ghost small" href="<?= View::url('admin/settings.php') ?>">⚙ Tournament settings</a></p>
 </div>
 
 <div class="grid">
     <div class="card">
         <h3 style="margin-top:0">Match management</h3>
         <p><a class="btn" href="<?= View::url('admin/match.php?id=new') ?>">+ New match / score entry</a></p>
-        <p><a class="btn ghost" href="<?= View::url('admin/fixtures.php') ?>">Fixtures &amp; auto-generator</a></p>
+        <p><a class="btn ghost" href="<?= View::url('admin/fixtures.php') ?>">Fixture map (bulk entry)</a></p>
     </div>
 
     <div class="card">

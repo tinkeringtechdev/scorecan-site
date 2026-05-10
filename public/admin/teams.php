@@ -37,23 +37,35 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $group = strtoupper(trim($_POST['group_letter'] ?? 'A'));
         $short = trim($_POST['short_code'] ?? '') ?: null;
         if ($id > 0 && $name !== '' && preg_match('/^[A-F]$/', $group)) {
-            Db::exec(
-                'UPDATE teams SET name = ?, group_letter = ?, short_code = ? WHERE id = ? AND tournament_id = ?',
-                [$name, $group, $short, $id, $tournamentId]
-            );
-            Auth::audit('team.update', 'team', $id, ['name' => $name, 'group' => $group]);
-            View::setFlash('ok', "Updated team #{$id}.");
+            try {
+                Db::exec(
+                    'UPDATE teams SET name = ?, group_letter = ?, short_code = ? WHERE id = ? AND tournament_id = ?',
+                    [$name, $group, $short, $id, $tournamentId]
+                );
+                Auth::audit('team.update', 'team', $id, ['name' => $name, 'group' => $group]);
+                View::setFlash('ok', "Updated team #{$id}.");
+            } catch (PDOException $e) {
+                if ($e->getCode() === '23000') {
+                    View::setFlash('error', "Can't rename to '{$name}' — another team already has that name.");
+                } else {
+                    View::setFlash('error', "Update failed: " . $e->getMessage());
+                }
+            }
         }
     } elseif ($action === 'delete') {
         $id = (int)($_POST['id'] ?? 0);
         if ($id > 0) {
-            $hasMatches = (int) Db::scalar('SELECT COUNT(*) FROM matches WHERE home_team_id = ? OR away_team_id = ?', [$id, $id]);
-            if ($hasMatches > 0) {
-                View::setFlash('error', "Can't delete — team has {$hasMatches} match(es). Delete those first.");
-            } else {
-                Db::exec('DELETE FROM teams WHERE id = ? AND tournament_id = ?', [$id, $tournamentId]);
-                Auth::audit('team.delete', 'team', $id);
-                View::setFlash('ok', "Deleted team #{$id}.");
+            try {
+                $hasMatches = (int) Db::scalar('SELECT COUNT(*) FROM matches WHERE home_team_id = ? OR away_team_id = ?', [$id, $id]);
+                if ($hasMatches > 0) {
+                    View::setFlash('error', "Can't delete — team has {$hasMatches} match(es). Delete those first.");
+                } else {
+                    Db::exec('DELETE FROM teams WHERE id = ? AND tournament_id = ?', [$id, $tournamentId]);
+                    Auth::audit('team.delete', 'team', $id);
+                    View::setFlash('ok', "Deleted team #{$id}.");
+                }
+            } catch (PDOException $e) {
+                View::setFlash('error', "Delete failed: " . $e->getMessage());
             }
         }
     }

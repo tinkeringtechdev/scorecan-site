@@ -25,6 +25,29 @@ class View {
         return self::base() . ltrim($path, '/');
     }
 
+    /**
+     * Asset URL with auto cache-busting query (file's mtime). Falls back to
+     * base+path if the file isn't found locally — useful for assets that come
+     * from another deploy step.
+     */
+    public static function asset(string $path): string {
+        $rel = ltrim($path, '/');
+        $local = __DIR__ . '/../public/' . $rel;        // local repo
+        $deployed = dirname($_SERVER['SCRIPT_FILENAME'] ?? '') . '/' . $rel;
+        $candidates = [];
+        // We don't know exactly where the running script sits, so try both.
+        if (isset($_SERVER['DOCUMENT_ROOT'])) {
+            $candidates[] = rtrim($_SERVER['DOCUMENT_ROOT'], '/') . '/' . $rel;
+        }
+        $candidates[] = $local;
+        $candidates[] = $deployed;
+        $v = null;
+        foreach ($candidates as $c) {
+            if (is_file($c)) { $v = filemtime($c); break; }
+        }
+        return self::base() . $rel . ($v ? '?v=' . $v : '');
+    }
+
     public static function e(?string $s): string {
         return htmlspecialchars((string)$s, ENT_QUOTES | ENT_HTML5, 'UTF-8');
     }
@@ -58,13 +81,13 @@ class View {
     <meta http-equiv="refresh" content="60">
     <?php endif; ?>
     <title><?= self::e($pageDoc) ?></title>
-    <link rel="stylesheet" href="<?= self::e($base) ?>assets/style.css?v=2">
-    <script src="<?= self::e($base) ?>assets/app.js?v=2" defer></script>
+    <link rel="stylesheet" href="<?= self::e(self::asset('assets/style.css')) ?>">
+    <script src="<?= self::e(self::asset('assets/app.js')) ?>" defer></script>
 </head>
 <body>
 <header class="site-banner">
     <a href="<?= self::e($base) ?>">
-        <img src="<?= self::e($base) ?>assets/img/peters_banner.png"
+        <img src="<?= self::e(self::asset('assets/img/peters_banner.png')) ?>"
              alt="<?= self::e($t['name']) ?> — <?= self::e($t['subtitle'] ?? '') ?>">
     </a>
 </header>

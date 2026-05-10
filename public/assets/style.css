@@ -63,10 +63,11 @@ a:hover { color: var(--spc-blue-dark); text-decoration: underline; }
 }
 .site-banner img {
     display: block;
-    width: 100%;
-    max-width: 1400px;
     margin: 0 auto;
-    height: auto;
+    max-width: 100%;        /* never overflow horizontally */
+    max-height: 300px;      /* cap banner height */
+    width: auto;
+    height: auto;           /* preserves aspect ratio */
 }
 
 /* Nav strip below banner ----------------------------------- */

@@ -1,23 +1,26 @@
 <?php
 /**
  * Team CRUD: list, add, edit, delete, plus bulk operations.
- *   - Individual add / update / delete
+ *   - Add / update / delete a single team
  *   - Bulk delete selected (skips teams already in matches)
- *   - Wipe everything (nuclear: deletes all teams AND their matches)
- * Group is a free-form letter A–F.
+ *   - Wipe everything (deletes all teams AND matches for this tournament)
+ *
+ * All row actions are JS-driven: on click the script builds a hidden POST form
+ * and submits it. Avoids the nested <form>-inside-<tr> HTML that browsers
+ * silently re-parent, which was breaking the checkbox / bulk-delete feature.
  */
 require __DIR__ . '/../bootstrap.php';
 Auth::require();
 
 $tournamentId = Db::activeTournamentId();
 
-// Handle POST actions.
+// ----- POST handler --------------------------------------------------------
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     Auth::checkCsrf();
     $action = $_POST['action'] ?? '';
 
     if ($action === 'add') {
-        $name = trim($_POST['name'] ?? '');
+        $name  = trim($_POST['name'] ?? '');
         $group = strtoupper(trim($_POST['group_letter'] ?? 'A'));
         $short = trim($_POST['short_code'] ?? '') ?: null;
         if ($name === '' || !preg_match('/^[A-F]$/', $group)) {
@@ -37,8 +40,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
     } elseif ($action === 'update') {
-        $id = (int)($_POST['id'] ?? 0);
-        $name = trim($_POST['name'] ?? '');
+        $id    = (int)($_POST['id'] ?? 0);
+        $name  = trim($_POST['name'] ?? '');
         $group = strtoupper(trim($_POST['group_letter'] ?? 'A'));
         $short = trim($_POST['short_code'] ?? '') ?: null;
         if ($id > 0 && $name !== '' && preg_match('/^[A-F]$/', $group)) {
@@ -76,8 +79,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
     } elseif ($action === 'bulk_delete') {
-        // Delete every selected team that isn't tied to any match.
-        $ids = array_filter(array_map('intval', (array)($_POST['ids'] ?? [])));
+        $ids = array_values(array_filter(array_map('intval', (array)($_POST['ids'] ?? []))));
         if (empty($ids)) {
             View::setFlash('error', 'No teams selected.');
         } else {
@@ -111,8 +113,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
     } elseif ($action === 'wipe_all') {
-        // Nuclear: delete all matches AND all teams for this tournament.
-        // Requires the double-confirm token from the form.
         $confirm = trim($_POST['confirm_phrase'] ?? '');
         if ($confirm !== 'WIPE') {
             View::setFlash('error', 'Type WIPE (uppercase) into the confirm box to wipe everything.');
@@ -191,63 +191,6 @@ $csrf = Auth::csrfToken();
         </div>
     </div>
 </div>
-
-<script>
-(function () {
-    var CSRF = <?= json_encode($csrf) ?>;
-    var ACTION_URL = <?= json_encode(View::url('admin/teams.php')) ?>;
-
-    var selectAll = document.getElementById('select-all-teams');
-    var countEl   = document.getElementById('selection-count');
-    var btn       = document.getElementById('bulk-delete-btn');
-
-    function boxes() { return document.querySelectorAll('input.bulk-team-cb'); }
-    function selected() {
-        return Array.prototype.filter.call(boxes(), function (b) { return b.checked; });
-    }
-    function updateCount() {
-        var sel = selected();
-        countEl.textContent = sel.length + ' selected';
-        btn.disabled = sel.length === 0;
-        if (selectAll) selectAll.checked = boxes().length > 0 && sel.length === boxes().length;
-    }
-    if (selectAll) {
-        selectAll.addEventListener('change', function () {
-            boxes().forEach(function (b) { b.checked = selectAll.checked; });
-            updateCount();
-        });
-    }
-    document.addEventListener('change', function (e) {
-        if (e.target && e.target.classList && e.target.classList.contains('bulk-team-cb')) updateCount();
-    });
-
-    btn.addEventListener('click', function () {
-        var sel = selected();
-        if (sel.length === 0) return;
-        if (!confirm('Delete ' + sel.length + ' selected team(s)? Teams already used in matches will be skipped.')) return;
-
-        // Build a hidden form and submit — sidesteps any HTML nesting issues.
-        var f = document.createElement('form');
-        f.method = 'post';
-        f.action = ACTION_URL;
-        f.style.display = 'none';
-        function addInput(name, value) {
-            var i = document.createElement('input');
-            i.type = 'hidden';
-            i.name = name;
-            i.value = value;
-            f.appendChild(i);
-        }
-        addInput('_csrf',  CSRF);
-        addInput('action', 'bulk_delete');
-        sel.forEach(function (cb) { addInput('ids[]', cb.value); });
-        document.body.appendChild(f);
-        f.submit();
-    });
-
-    updateCount();
-})();
-</script>
 <?php endif; ?>
 
 <?php foreach (['A','B','C','D','E','F'] as $letter):
@@ -263,39 +206,29 @@ $csrf = Auth::csrfToken();
                 <th>Team name</th>
                 <th>Short</th>
                 <th>Group</th>
-                <th style="width:140px">Actions</th>
+                <th style="width:160px">Actions</th>
             </tr>
         </thead>
         <tbody>
         <?php foreach ($byGroup[$letter] as $t): ?>
-            <tr>
+            <tr data-team-id="<?= (int)$t['id'] ?>" data-team-name="<?= View::e($t['name']) ?>">
                 <td style="text-align:center">
                     <input type="checkbox" class="bulk-team-cb" value="<?= (int)$t['id'] ?>">
                 </td>
-                <form method="post" style="display:contents">
-                    <input type="hidden" name="_csrf" value="<?= View::e($csrf) ?>">
-                    <input type="hidden" name="action" value="update">
-                    <input type="hidden" name="id" value="<?= (int)$t['id'] ?>">
-                    <td><input type="text" name="name" value="<?= View::e($t['name']) ?>" required></td>
-                    <td><input type="text" name="short_code" value="<?= View::e($t['short_code']) ?>" maxlength="8"></td>
-                    <td>
-                        <select name="group_letter">
-                            <?php foreach (['A','B','C','D','E','F'] as $g):
-                                $sel = $g === $t['group_letter'] ? ' selected' : '';
-                            ?>
-                                <option value="<?= $g ?>"<?= $sel ?>><?= $g ?></option>
-                            <?php endforeach; ?>
-                        </select>
-                    </td>
-                    <td>
-                        <button class="btn small">Save</button>
-                </form>
-                <form method="post" style="display:inline">
-                    <input type="hidden" name="_csrf" value="<?= View::e($csrf) ?>">
-                    <input type="hidden" name="action" value="delete">
-                    <input type="hidden" name="id" value="<?= (int)$t['id'] ?>">
-                    <button class="btn small danger" data-confirm="Delete <?= View::e($t['name']) ?>?">Delete</button>
-                </form>
+                <td><input type="text" class="team-name" value="<?= View::e($t['name']) ?>" required maxlength="120"></td>
+                <td><input type="text" class="team-short" value="<?= View::e($t['short_code']) ?>" maxlength="8"></td>
+                <td>
+                    <select class="team-group">
+                        <?php foreach (['A','B','C','D','E','F'] as $g):
+                            $sel = $g === $t['group_letter'] ? ' selected' : '';
+                        ?>
+                            <option value="<?= $g ?>"<?= $sel ?>><?= $g ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                </td>
+                <td>
+                    <button type="button" class="btn small team-save-btn">Save</button>
+                    <button type="button" class="btn small danger team-delete-btn">Delete</button>
                 </td>
             </tr>
         <?php endforeach; ?>
@@ -309,8 +242,8 @@ $csrf = Auth::csrfToken();
 <div class="card" style="border-left:4px solid var(--danger)">
     <h3 style="margin-top:0;color:var(--danger)">Danger zone — wipe everything</h3>
     <p class="muted">
-        Deletes <strong>every team and every match</strong> for the current tournament. Useful when starting fresh
-        (e.g. re-importing after AI Import went wrong). Cannot be undone.
+        Deletes <strong>every team and every match</strong> for the current tournament. Useful when starting fresh.
+        Cannot be undone.
     </p>
     <form method="post">
         <input type="hidden" name="_csrf" value="<?= View::e($csrf) ?>">
@@ -325,5 +258,101 @@ $csrf = Auth::csrfToken();
     </form>
 </div>
 <?php endif; ?>
+
+<script>
+(function () {
+    var CSRF       = <?= json_encode($csrf) ?>;
+    var ACTION_URL = <?= json_encode(View::url('admin/teams.php')) ?>;
+
+    /** Build and submit a hidden POST form to ACTION_URL. */
+    function submitAction(action, params) {
+        var f = document.createElement('form');
+        f.method = 'post';
+        f.action = ACTION_URL;
+        f.style.display = 'none';
+        function addInput(name, value) {
+            var i = document.createElement('input');
+            i.type  = 'hidden';
+            i.name  = name;
+            i.value = value == null ? '' : value;
+            f.appendChild(i);
+        }
+        addInput('_csrf',  CSRF);
+        addInput('action', action);
+        Object.keys(params || {}).forEach(function (k) {
+            var v = params[k];
+            if (Array.isArray(v)) {
+                v.forEach(function (item) { addInput(k, item); });
+            } else {
+                addInput(k, v);
+            }
+        });
+        document.body.appendChild(f);
+        f.submit();
+    }
+
+    // ----- Save a single row --------------------------------------------
+    document.addEventListener('click', function (e) {
+        var btn = e.target.closest && e.target.closest('.team-save-btn');
+        if (!btn) return;
+        var row = btn.closest('tr');
+        if (!row) return;
+        submitAction('update', {
+            id:           row.dataset.teamId,
+            name:         row.querySelector('.team-name').value,
+            short_code:   row.querySelector('.team-short').value,
+            group_letter: row.querySelector('.team-group').value,
+        });
+    });
+
+    // ----- Delete a single row ------------------------------------------
+    document.addEventListener('click', function (e) {
+        var btn = e.target.closest && e.target.closest('.team-delete-btn');
+        if (!btn) return;
+        var row = btn.closest('tr');
+        if (!row) return;
+        var name = row.dataset.teamName || 'this team';
+        if (!confirm('Delete ' + name + '?')) return;
+        submitAction('delete', { id: row.dataset.teamId });
+    });
+
+    // ----- Bulk-delete controls -----------------------------------------
+    var selectAll = document.getElementById('select-all-teams');
+    var countEl   = document.getElementById('selection-count');
+    var bulkBtn   = document.getElementById('bulk-delete-btn');
+
+    function checkboxes() { return document.querySelectorAll('input.bulk-team-cb'); }
+    function checkedIds() {
+        var ids = [];
+        checkboxes().forEach(function (cb) { if (cb.checked) ids.push(cb.value); });
+        return ids;
+    }
+    function updateCount() {
+        if (!countEl || !bulkBtn) return;
+        var ids = checkedIds();
+        countEl.textContent = ids.length + ' selected';
+        bulkBtn.disabled = ids.length === 0;
+        if (selectAll) selectAll.checked = checkboxes().length > 0 && ids.length === checkboxes().length;
+    }
+    if (selectAll) {
+        selectAll.addEventListener('change', function () {
+            checkboxes().forEach(function (cb) { cb.checked = selectAll.checked; });
+            updateCount();
+        });
+    }
+    document.addEventListener('change', function (e) {
+        if (e.target && e.target.classList && e.target.classList.contains('bulk-team-cb')) updateCount();
+    });
+    if (bulkBtn) {
+        bulkBtn.addEventListener('click', function () {
+            var ids = checkedIds();
+            if (ids.length === 0) return;
+            if (!confirm('Delete ' + ids.length + ' selected team(s)? Teams already used in matches will be skipped.')) return;
+            submitAction('bulk_delete', { 'ids[]': ids });
+        });
+    }
+    updateCount();
+})();
+</script>
 
 <?php View::footer();

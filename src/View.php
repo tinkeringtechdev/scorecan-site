@@ -67,6 +67,7 @@ class View {
             'single_group' => 0,
             'hide_fixtures_tab' => 0,
             'balls_per_over' => 6,
+            'standings_source' => 'calculated',
         ];
         return self::$tournament;
     }

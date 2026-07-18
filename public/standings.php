@@ -5,8 +5,15 @@
 require __DIR__ . '/bootstrap.php';
 
 $tournamentId = Db::activeTournamentId();
-$byGroup      = Standings::allByGroup($tournamentId);
 $t            = View::tournament();
+
+// In manual mode, /standings.php isn't meaningful — send visitors to the home page.
+if (($t['standings_source'] ?? 'calculated') === 'manual') {
+    header('Location: ' . View::url('index.php'), true, 302);
+    exit;
+}
+
+$byGroup      = Standings::allByGroup($tournamentId);
 $singleGroup  = !empty($t['single_group']);
 
 // For flat mode, collapse per-group rows into one list ordered by points/NRR.

@@ -49,6 +49,9 @@ View::flash();
         <?php if (!empty($tournament['hide_fixtures_tab'])): ?>
             · <span class="innings-pill second">Fixtures hidden</span>
         <?php endif; ?>
+        <?php if (($tournament['standings_source'] ?? 'calculated') === 'manual'): ?>
+            · <span class="innings-pill second">Manual standings</span>
+        <?php endif; ?>
     </p>
     <p>
         Teams: <strong><?= $counts['teams'] ?></strong>
@@ -62,10 +65,17 @@ View::flash();
 <div class="grid">
     <div class="card">
         <h3 style="margin-top:0">Match management</h3>
-        <p><a class="btn" href="<?= View::url('admin/match.php?id=new') ?>">+ Enter match score</a></p>
-        <p><a class="btn ghost" href="<?= View::url('admin/fixtures.php') ?>">Fixture map (bulk entry)</a></p>
-        <p><a class="btn ghost" href="<?= View::url('admin/results.php') ?>">View results</a></p>
-        <p><a class="btn gold" href="<?= View::url('admin/import-draw.php') ?>">📷 AI Import (Teams &amp; Fixtures)</a></p>
+        <?php if (($tournament['standings_source'] ?? 'calculated') === 'manual'): ?>
+            <p><a class="btn gold" href="<?= View::url('admin/import-standings.php') ?>">📷 Update standings from screenshot</a></p>
+            <p class="muted" style="font-size:13px">
+                In manual mode. Match entry, fixtures, and results are still available for reference but don't affect the home page.
+            </p>
+        <?php else: ?>
+            <p><a class="btn" href="<?= View::url('admin/match.php?id=new') ?>">+ Enter match score</a></p>
+            <p><a class="btn ghost" href="<?= View::url('admin/fixtures.php') ?>">Fixture map (bulk entry)</a></p>
+            <p><a class="btn ghost" href="<?= View::url('admin/results.php') ?>">View results</a></p>
+            <p><a class="btn gold" href="<?= View::url('admin/import-draw.php') ?>">📷 AI Import (Teams &amp; Fixtures)</a></p>
+        <?php endif; ?>
     </div>
 
     <div class="card">

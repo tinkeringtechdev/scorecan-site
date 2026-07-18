@@ -21,6 +21,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $year       = (int)($_POST['year'] ?? date('Y'));
     $singleGrp  = isset($_POST['single_group']) ? 1 : 0;
     $hideFix    = isset($_POST['hide_fixtures_tab']) ? 1 : 0;
+    $stSource   = ($_POST['standings_source'] ?? 'calculated') === 'manual' ? 'manual' : 'calculated';
 
     if ($name === '') {
         View::setFlash('error', 'Tournament name is required.');
@@ -29,14 +30,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             UPDATE tournaments SET
                 name = ?, subtitle = ?, organizer = ?, year = ?,
                 tournament_date = ?, overs_per_side = ?, balls_per_over = ?,
-                team_size = ?, single_group = ?, hide_fixtures_tab = ?
+                team_size = ?, single_group = ?, hide_fixtures_tab = ?,
+                standings_source = ?
             WHERE id = ?",
             [$name, $subtitle, $organizer, $year, $date, $overs, $ballsOver,
-             $size, $singleGrp, $hideFix, $tournamentId]
+             $size, $singleGrp, $hideFix, $stSource, $tournamentId]
         );
         Auth::audit('tournament.update', 'tournament', $tournamentId, [
             'name' => $name, 'date' => $date, 'overs' => $overs, 'balls_per_over' => $ballsOver,
             'team_size' => $size, 'single_group' => $singleGrp, 'hide_fixtures_tab' => $hideFix,
+            'standings_source' => $stSource,
         ]);
         View::setFlash('ok', 'Settings saved.');
     }
@@ -133,6 +136,26 @@ View::flash();
     </div>
     <p class="muted" style="font-size:12px;margin-top:-6px">
         When hidden, the Fixtures tab won't appear in the public nav. Admins can still access it via <code>/admin/fixtures.php</code>.
+    </p>
+
+    <h3>Standings source</h3>
+    <?php $src = $t['standings_source'] ?? 'calculated'; ?>
+    <div class="row">
+        <label>How the home page gets standings</label>
+        <span>
+            <label style="font-weight:normal;display:block;margin-bottom:6px">
+                <input type="radio" name="standings_source" value="calculated" <?= $src === 'calculated' ? 'checked' : '' ?>>
+                <strong>Calculated</strong> — from match scores entered in the admin panel
+            </label>
+            <label style="font-weight:normal;display:block">
+                <input type="radio" name="standings_source" value="manual" <?= $src === 'manual' ? 'checked' : '' ?>>
+                <strong>Manual</strong> — from a screenshot uploaded via <a href="<?= View::url('admin/import-standings.php') ?>">Update Standings</a>
+            </label>
+        </span>
+    </div>
+    <p class="muted" style="font-size:12px;margin-top:-6px">
+        Manual mode is for when you calculate standings offline (in Excel etc.) and just want the site as a display board.
+        You can flip between modes any time — data isn't lost.
     </p>
 
     <div class="actions">

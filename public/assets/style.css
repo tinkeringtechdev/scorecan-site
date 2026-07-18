@@ -344,7 +344,7 @@ body.home-hero {
     background-image: url('img/peters_banner.png');
     background-color: var(--spc-blue-dark);       /* fills below the image */
     background-size: 100% auto;                    /* fill width, no cropping */
-    background-position: center top;
+    background-position: center 55px;              /* push image down below the nav */
     background-repeat: no-repeat;
     background-attachment: scroll;                 /* fixed misbehaves on iOS Safari */
 }
@@ -370,43 +370,83 @@ body.home-hero .page p.muted {
     text-align: center;
     font-size: 15px;
 }
+/* Card: high-contrast dark blue background with a strong gold border. */
 body.home-hero .card {
-    background: rgba(15, 30, 60, 0.82);
+    background: rgba(8, 18, 40, 0.94);
     color: #fff;
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+    border: 2px solid var(--spc-gold);
+    border-radius: 12px;
+    box-shadow: 0 10px 50px rgba(0, 0, 0, 0.7);
 }
+/* Group title bar: solid gold with dark blue text — reads across a room. */
 body.home-hero .card .group-title {
-    background: var(--spc-blue-dark);
-    color: var(--spc-gold);
+    background: var(--spc-gold);
+    color: #0a1428;
+    font-weight: 800;
+    letter-spacing: 3px;
+    padding: 10px 12px;
+    font-size: 14px;
+    border-radius: 8px 8px 0 0;
+    margin: -18px -18px 12px;
 }
-body.home-hero table.scoretable { color: #fff; }
+/* Table: bigger, bolder, higher contrast. */
+body.home-hero table.scoretable {
+    color: #fff;
+    font-size: 16px;
+}
 body.home-hero table.scoretable thead th {
-    background: var(--spc-blue-dark);
-    color: var(--spc-gold-soft);
-    border-color: rgba(0,0,0,0.5);
+    background: var(--spc-gold);
+    color: #0a1428;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    padding: 14px 10px;
+    font-size: 14px;
+    border-color: rgba(0, 0, 0, 0.35);
 }
 body.home-hero table.scoretable tbody td {
     color: #fff;
-    border-color: rgba(255, 255, 255, 0.10);
+    padding: 12px 10px;
+    border-color: rgba(255, 255, 255, 0.18);
+    font-size: 16px;
 }
-body.home-hero table.scoretable tbody tr:nth-child(odd)  { background: rgba(255, 255, 255, 0.04); }
-body.home-hero table.scoretable tbody tr:nth-child(even) { background: rgba(255, 255, 255, 0.10); }
+body.home-hero table.scoretable tbody td.team {
+    font-weight: 700;
+    letter-spacing: 0.3px;
+    color: #fff;
+}
+body.home-hero table.scoretable tbody td.num strong {
+    color: var(--spc-gold);        /* Pts, Rank pop in gold */
+    font-size: 18px;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.4);
+}
+body.home-hero table.scoretable tbody tr:nth-child(odd)  { background: rgba(255, 255, 255, 0.03); }
+body.home-hero table.scoretable tbody tr:nth-child(even) { background: rgba(255, 255, 255, 0.13); }
+
+/* Cutline: unmissable gold bar with dark caption underneath. */
 body.home-hero table.scoretable tbody tr.cutline > td {
-    border-bottom: 5px solid var(--spc-gold) !important;
+    border-bottom: 6px solid var(--spc-gold) !important;
+    padding-bottom: 14px;
 }
 body.home-hero table.scoretable tbody tr.cutline-caption > td {
     background: var(--spc-gold) !important;
-    color: #1c1300;
-    border-top: 5px solid var(--spc-gold);
+    color: #0a1428;
+    font-size: 14px;
+    letter-spacing: 5px;
+    padding: 12px 8px;
+    font-weight: 800;
+    border-top: none;
 }
+
+/* Opaque nav so it doesn't blend into the image behind it. */
 body.home-hero .site-nav {
-    background: linear-gradient(135deg, rgba(31, 59, 107, 0.95), rgba(21, 41, 74, 0.95));
-    backdrop-filter: blur(6px);
-    border-bottom-color: var(--spc-gold);
+    background: linear-gradient(135deg, var(--spc-blue-dark) 0%, #0a1428 100%);
+    border-bottom: 3px solid var(--spc-gold);
+    position: relative;
+    z-index: 10;
 }
 body.home-hero .site-footer {
-    background: rgba(15, 30, 60, 0.75);
+    background: rgba(8, 18, 40, 0.85);
     color: rgba(255,255,255,0.7);
     border-top-color: rgba(255,255,255,0.15);
 }

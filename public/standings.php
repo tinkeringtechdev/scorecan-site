@@ -53,9 +53,14 @@ View::header('Standings', 'home', true);
         </tr>
         </thead>
         <tbody>
-        <?php foreach ($flat as $i => $r):
+        <?php
+        $anyPlayedFlat = false;
+        foreach ($flat as $rr) {
+            if ((int)($rr['played'] ?? 0) > 0) { $anyPlayedFlat = true; break; }
+        }
+        foreach ($flat as $i => $r):
             $rowNum = $i + 1;
-            $isCut  = $rowNum === 8;
+            $isCut  = $anyPlayedFlat && $rowNum === 8;
             $cls    = $isCut ? ' class="cutline"' : '';
         ?>
             <tr<?= $cls ?>>
@@ -100,9 +105,14 @@ View::header('Standings', 'home', true);
         </tr>
         </thead>
         <tbody>
-        <?php foreach ($rows as $i => $r):
+        <?php
+        $anyPlayedGrp = false;
+        foreach ($rows as $rr) {
+            if ((int)($rr['played'] ?? 0) > 0) { $anyPlayedGrp = true; break; }
+        }
+        foreach ($rows as $i => $r):
             $rowNum = $i + 1;
-            $isCut  = $rowNum === 2;
+            $isCut  = $anyPlayedGrp && $rowNum === 2;
             $cls    = $isCut ? ' class="cutline"' : '';
         ?>
             <tr<?= $cls ?>>

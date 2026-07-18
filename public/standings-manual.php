@@ -54,9 +54,14 @@ View::header('Manual Standings', 'home', true, ['body_class' => 'home-hero']);
                 </tr>
             </thead>
             <tbody>
-            <?php foreach ($manual as $i => $r):
+            <?php
+            $anyPlayedManual = false;
+            foreach ($manual as $rr) {
+                if ((int)($rr['played'] ?? 0) > 0) { $anyPlayedManual = true; break; }
+            }
+            foreach ($manual as $i => $r):
                 $rowNum = $i + 1;
-                $isCut  = ($singleGroup && $rowNum === 8);
+                $isCut  = ($singleGroup && $anyPlayedManual && $rowNum === 8);
                 $cls    = $isCut ? ' class="cutline"' : '';
             ?>
                 <tr<?= $cls ?>>

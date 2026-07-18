@@ -150,8 +150,14 @@ class View {
     /**
      * Render a single group's standings table.
      * $cutAt = row index (1-based) after which to draw the cutline. 0 = no cutline.
+     * The cutline is hidden until at least one match has been played (any row with played > 0).
      */
     public static function standingsTable(string $letter, array $rows, int $cutAt = 0): void {
+        $anyPlayed = false;
+        foreach ($rows as $r) {
+            if ((int)($r['played'] ?? 0) > 0) { $anyPlayed = true; break; }
+        }
+        if (!$anyPlayed) $cutAt = 0;
         ?>
         <div class="card">
             <div class="group-title">Group <?= self::e($letter) ?></div>
@@ -197,6 +203,7 @@ class View {
     /**
      * Render one big flat standings table with a Rank column and a cutline
      * after row N (default 8 — top 8 to QFs). Used in single-group mode.
+     * The cutline stays hidden until at least one match has been played.
      */
     public static function standingsFlatTable(array $rows, int $cutAt = 8): void {
         // rows may come per-group; flatten and re-sort by points DESC, NRR DESC.
@@ -211,6 +218,11 @@ class View {
         usort($flat, function ($a, $b) {
             return [-$a['points'], -$a['nrr']] <=> [-$b['points'], -$b['nrr']];
         });
+        $anyPlayed = false;
+        foreach ($flat as $r) {
+            if ((int)($r['played'] ?? 0) > 0) { $anyPlayed = true; break; }
+        }
+        if (!$anyPlayed) $cutAt = 0;
         ?>
         <div class="card">
             <div class="group-title">All Teams &mdash; Top <?= (int)$cutAt ?> Qualify</div>

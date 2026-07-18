@@ -54,9 +54,15 @@ if ($source === 'manual') {
                     </tr>
                 </thead>
                 <tbody>
-                <?php foreach ($manual as $i => $r):
+                <?php
+                // Only draw the cutline after at least one match has been played.
+                $anyPlayedManual = false;
+                foreach ($manual as $rr) {
+                    if ((int)($rr['played'] ?? 0) > 0) { $anyPlayedManual = true; break; }
+                }
+                foreach ($manual as $i => $r):
                     $rowNum = $i + 1;
-                    $isCut  = ($singleGroup && $rowNum === 8);
+                    $isCut  = ($singleGroup && $anyPlayedManual && $rowNum === 8);
                     $cls    = $isCut ? ' class="cutline"' : '';
                 ?>
                     <tr<?= $cls ?>>

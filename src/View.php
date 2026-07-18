@@ -103,7 +103,8 @@ class View {
         $t = self::tournament();
         $items = [
             ['href' => 'index.php',     'key' => 'home',      'label' => 'Standings'],
-            ['href' => 'schedule.php',  'key' => 'schedule',  'label' => 'Schedule'],
+            // Schedule tab hidden for now — reach it via /schedule.php directly if needed.
+            // ['href' => 'schedule.php',  'key' => 'schedule',  'label' => 'Schedule'],
         ];
         if (empty($t['hide_fixtures_tab'])) {
             $items[] = ['href' => 'fixtures.php',  'key' => 'fixtures',  'label' => 'Fixtures'];

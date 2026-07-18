@@ -353,9 +353,20 @@ body.home-hero::before {
 }
 body.home-hero .page {
     max-width: 1300px;
-    margin: 30px auto 60px;
+    /* Push down so the top of the banner (logo + "St. Peter's College OBA
+       East Coast USA" wording) is visible above the standings table.
+       Uses vw so it scales with the banner height on any screen size. */
+    margin: 13vw auto 60px;
     padding: 0 20px;
     position: relative;
+}
+/* Cap the vertical push so it doesn't get silly on ultra-wide monitors,
+   and give mobile a sensible minimum. */
+@media (max-width: 700px) {
+    body.home-hero .page { margin-top: 12vw; }
+}
+@media (min-width: 1600px) {
+    body.home-hero .page { margin-top: 210px; }
 }
 body.home-hero .page h2 {
     color: #fff;

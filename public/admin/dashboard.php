@@ -59,7 +59,15 @@ View::flash();
         · In progress: <strong><?= $counts['inprogress'] ?></strong>
         · Completed: <strong><?= $counts['complete'] ?></strong>
     </p>
-    <p><a class="btn ghost small" href="<?= View::url('admin/settings.php') ?>">⚙ Tournament settings</a></p>
+    <p>
+        <a class="btn ghost small" href="<?= View::url('admin/settings.php') ?>">⚙ Tournament settings</a>
+        &nbsp;
+        <a class="btn ghost small" href="<?= View::url('standings-live.php') ?>" target="_blank">📊 Live view</a>
+        <a class="btn ghost small" href="<?= View::url('standings-manual.php') ?>" target="_blank">📄 Manual view</a>
+    </p>
+    <p class="muted" style="font-size:12px;margin-top:-6px">
+        Both standings views are always accessible in parallel — regardless of which one is set as the primary home-page source.
+    </p>
 </div>
 
 <div class="grid">

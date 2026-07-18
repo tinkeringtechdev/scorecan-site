@@ -26,9 +26,12 @@ CREATE TABLE tournaments (
     organizer       VARCHAR(180) NULL,                 -- e.g. "SPCOBA East Coast USA"
     year            SMALLINT UNSIGNED NOT NULL,
     tournament_date DATE NULL,                         -- single-day tournament date; auto-fills score-entry form
-    overs_per_side  TINYINT UNSIGNED NOT NULL DEFAULT 5,
-    team_size       TINYINT UNSIGNED NOT NULL DEFAULT 6,
-    is_active       TINYINT(1) NOT NULL DEFAULT 1,
+    overs_per_side    TINYINT UNSIGNED NOT NULL DEFAULT 5,
+    balls_per_over    TINYINT UNSIGNED NOT NULL DEFAULT 6,   -- 5 or 6
+    team_size         TINYINT UNSIGNED NOT NULL DEFAULT 6,
+    single_group      TINYINT(1) NOT NULL DEFAULT 0,          -- 1 = one flat standings table
+    hide_fixtures_tab TINYINT(1) NOT NULL DEFAULT 0,          -- 1 = hide public Fixtures tab
+    is_active         TINYINT(1) NOT NULL DEFAULT 1,
     created_at      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (id),
     KEY idx_active (is_active)

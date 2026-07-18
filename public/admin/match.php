@@ -19,7 +19,9 @@ Auth::require();
 
 $tournamentId = Db::activeTournamentId();
 $tournament   = Db::one('SELECT * FROM tournaments WHERE id = ?', [$tournamentId]);
-$quotaBalls   = (int)$tournament['overs_per_side'] * 6;
+$ballsPerOver = (int)($tournament['balls_per_over'] ?? 6);
+if (!in_array($ballsPerOver, [5, 6], true)) $ballsPerOver = 6;
+$quotaBalls   = (int)$tournament['overs_per_side'] * $ballsPerOver;
 $teamSize     = (int)$tournament['team_size'];
 $lockedDate   = $tournament['tournament_date'] ?? null;
 
@@ -83,8 +85,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $status    = $_POST['status'] ?? 'scheduled';
 
     try {
-        $homeBalls = $homeAllOut ? $quotaBalls : Standings::oversToBalls($homeOvers);
-        $awayBalls = $awayAllOut ? $quotaBalls : Standings::oversToBalls($awayOvers);
+        $homeBalls = $homeAllOut ? $quotaBalls : Standings::oversToBalls($homeOvers, $ballsPerOver);
+        $awayBalls = $awayAllOut ? $quotaBalls : Standings::oversToBalls($awayOvers, $ballsPerOver);
     } catch (InvalidArgumentException $e) {
         $errors[] = $e->getMessage();
         $homeBalls = $awayBalls = 0;
@@ -196,9 +198,11 @@ $pageTitle = $isNew ? 'Enter Match Score' : 'Enter Match Score #' . (int)$matchI
 
 View::header($pageTitle, 'admin');
 View::flash();
-$homeOversValue = $match['home_balls_faced'] ? Standings::ballsToOvers((int)$match['home_balls_faced']) : '0.0';
-$awayOversValue = $match['away_balls_faced'] ? Standings::ballsToOvers((int)$match['away_balls_faced']) : '0.0';
+$homeOversValue = $match['home_balls_faced'] ? Standings::ballsToOvers((int)$match['home_balls_faced'], $ballsPerOver) : '0.0';
+$awayOversValue = $match['away_balls_faced'] ? Standings::ballsToOvers((int)$match['away_balls_faced'], $ballsPerOver) : '0.0';
 $fullQuotaOvers = number_format((float)$tournament['overs_per_side'], 1);
+$maxDecimal     = $ballsPerOver - 1;      // 4 for 5-ball, 5 for 6-ball
+$oversPattern   = "^\\d+(\\.[0-{$maxDecimal}])?$";
 $homeFirst = (int)$match['home_batted_first'] === 1;
 
 $homeName = null; $awayName = null;
@@ -213,6 +217,7 @@ $team2Label = $awayName ?: 'Team 2';
 
 <h2><?= View::e($pageTitle) ?></h2>
 <p class="muted"><?= View::e($tournament['overs_per_side']) ?> overs per side
+   · <?= (int)$ballsPerOver ?>-ball overs
    · team size <?= (int)$tournament['team_size'] ?> · max wickets <?= (int)$tournament['team_size'] - 1 ?>
    <?php if ($lockedDate): ?>· date locked to <strong><?= View::e(date('D, d M Y', strtotime($lockedDate))) ?></strong><?php endif; ?>
 </p>
@@ -305,9 +310,9 @@ $team2Label = $awayName ?: 'Team 2';
         </span>
     </div>
     <div class="row">
-        <label for="home_overs">Overs (e.g. 4.3)</label>
+        <label for="home_overs">Overs (e.g. 4.<?= max(1, $maxDecimal - 1) ?>)</label>
         <span>
-            <input type="text" name="home_overs" id="home_overs" pattern="^\d+(\.[0-5])?$" value="<?= View::e($homeOversValue) ?>" data-full-quota="<?= $fullQuotaOvers ?>" style="max-width:90px">
+            <input type="text" name="home_overs" id="home_overs" pattern="<?= $oversPattern ?>" value="<?= View::e($homeOversValue) ?>" data-full-quota="<?= $fullQuotaOvers ?>" style="max-width:90px">
             <label style="font-weight:normal;margin-left:10px;color:var(--text-muted)">
                 <input type="checkbox" name="home_all_out" data-allout-target="home_overs" <?= $match['home_all_out'] ? 'checked' : '' ?>>
                 All out — use full quota
@@ -337,9 +342,9 @@ $team2Label = $awayName ?: 'Team 2';
         </span>
     </div>
     <div class="row">
-        <label for="away_overs">Overs (e.g. 4.3)</label>
+        <label for="away_overs">Overs (e.g. 4.<?= max(1, $maxDecimal - 1) ?>)</label>
         <span>
-            <input type="text" name="away_overs" id="away_overs" pattern="^\d+(\.[0-5])?$" value="<?= View::e($awayOversValue) ?>" data-full-quota="<?= $fullQuotaOvers ?>" style="max-width:90px">
+            <input type="text" name="away_overs" id="away_overs" pattern="<?= $oversPattern ?>" value="<?= View::e($awayOversValue) ?>" data-full-quota="<?= $fullQuotaOvers ?>" style="max-width:90px">
             <label style="font-weight:normal;margin-left:10px;color:var(--text-muted)">
                 <input type="checkbox" name="away_all_out" data-allout-target="away_overs" <?= $match['away_all_out'] ? 'checked' : '' ?>>
                 All out — use full quota

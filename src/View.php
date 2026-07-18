@@ -64,6 +64,9 @@ class View {
             'name' => 'Peterite Cricket Carnival 2026',
             'subtitle' => 'Cecil Perera Memorial Trophy',
             'organizer' => 'SPCOBA East Coast USA',
+            'single_group' => 0,
+            'hide_fixtures_tab' => 0,
+            'balls_per_over' => 6,
         ];
         return self::$tournament;
     }
@@ -94,12 +97,15 @@ class View {
 <nav class="site-nav">
     <div class="wrap">
         <?php
+        $t = self::tournament();
         $items = [
             ['href' => 'index.php',     'key' => 'home',      'label' => 'Standings'],
-            ['href' => 'fixtures.php',  'key' => 'fixtures',  'label' => 'Fixtures'],
-            ['href' => 'knockouts.php', 'key' => 'knockouts', 'label' => 'Knockouts'],
-            ['href' => 'admin/',        'key' => 'admin',     'label' => 'Admin'],
         ];
+        if (empty($t['hide_fixtures_tab'])) {
+            $items[] = ['href' => 'fixtures.php',  'key' => 'fixtures',  'label' => 'Fixtures'];
+        }
+        $items[] = ['href' => 'knockouts.php', 'key' => 'knockouts', 'label' => 'Knockouts'];
+        $items[] = ['href' => 'admin/',        'key' => 'admin',     'label' => 'Admin'];
         foreach ($items as $it):
             $cls = $it['key'] === $activeNav ? ' class="active"' : '';
             ?><a href="<?= self::e($base . $it['href']) ?>"<?= $cls ?>><?= self::e($it['label']) ?></a><?php
@@ -157,6 +163,63 @@ class View {
                         $cls = ($highlightTop > 0 && $i < $highlightTop) ? ' class="qualifier"' : '';
                     ?>
                     <tr<?= $cls ?>>
+                        <td class="team"><?= self::e($r['team_name']) ?></td>
+                        <td class="num"><?= (int)$r['played'] ?></td>
+                        <td class="num"><?= (int)$r['wins'] ?></td>
+                        <td class="num"><?= (int)$r['losses'] ?></td>
+                        <td class="num"><?= (int)$r['ties'] ?></td>
+                        <td class="num"><strong><?= (int)$r['points'] ?></strong></td>
+                        <td class="num"><?= self::e(Standings::fmtNrr($r['nrr'])) ?></td>
+                    </tr>
+                    <?php endforeach; ?>
+                <?php endif; ?>
+                </tbody>
+            </table>
+            </div>
+        </div>
+        <?php
+    }
+
+    /**
+     * Render one big flat standings table with a Rank column and the top N
+     * highlighted. Used when the tournament is set to single_group mode
+     * (e.g. 22 teams all in one pool).
+     */
+    public static function standingsFlatTable(array $rows, int $highlightTop = 8): void {
+        // rows may come per-group; flatten and re-sort by points DESC, NRR DESC.
+        $flat = [];
+        foreach ($rows as $groupKey => $groupRows) {
+            if (is_array($groupRows) && isset($groupRows[0]['team_name'])) {
+                foreach ($groupRows as $r) $flat[] = $r;
+            } else {
+                $flat[] = $groupRows;
+            }
+        }
+        usort($flat, function ($a, $b) {
+            return [-$a['points'], -$a['nrr']] <=> [-$b['points'], -$b['nrr']];
+        });
+        ?>
+        <div class="card">
+            <div class="group-title">All Teams &mdash; Top <?= (int)$highlightTop ?> Qualify</div>
+            <div class="table-wrap">
+            <table class="scoretable">
+                <thead>
+                <tr>
+                    <th style="width:50px">#</th>
+                    <th>Team</th>
+                    <th>P</th><th>W</th><th>L</th><th>T</th>
+                    <th>Pts</th><th>NRR</th>
+                </tr>
+                </thead>
+                <tbody>
+                <?php if (empty($flat)): ?>
+                    <tr><td colspan="8" style="text-align:center;color:var(--text-muted)">No teams yet.</td></tr>
+                <?php else: ?>
+                    <?php foreach ($flat as $i => $r):
+                        $cls = ($highlightTop > 0 && $i < $highlightTop) ? ' class="qualifier"' : '';
+                    ?>
+                    <tr<?= $cls ?>>
+                        <td class="num"><strong><?= $i + 1 ?></strong></td>
                         <td class="team"><?= self::e($r['team_name']) ?></td>
                         <td class="num"><?= (int)$r['played'] ?></td>
                         <td class="num"><?= (int)$r['wins'] ?></td>

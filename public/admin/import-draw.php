@@ -80,12 +80,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 $matches = $_SESSION['import_draw_matches'] ?? [];
 $csrf    = Auth::csrfToken();
 
-View::header('AI Import of Teams', 'admin');
+View::header('AI Import (Teams &amp; Fixtures)', 'admin');
 View::flash();
 ?>
 
 <p><a href="<?= View::url('admin/dashboard.php') ?>">← Dashboard</a></p>
-<h2>AI Import of Teams</h2>
+<h2>AI Import (Teams &amp; Fixtures)</h2>
 
 <?php if (!$apiKeySet): ?>
     <div class="flash error">
@@ -98,7 +98,11 @@ View::flash();
 
     <div class="card">
         <h3 style="margin-top:0">Step 1 — Upload</h3>
-        <p class="muted">Take a clear photo or screenshot of the tournament draw. The AI reads it and lists every match for you to review before committing to the database.</p>
+        <p class="muted">
+            Upload a photo or screenshot of your <strong>team list</strong>, your <strong>fixture map</strong>, or a
+            combined draw. The AI reads it, extracts every match, and creates the teams and fixtures
+            in one go. You can run it multiple times — teams already in the system are reused, not duplicated.
+        </p>
 
         <form id="upload-form" method="post" enctype="multipart/form-data" <?= $apiKeySet ? '' : 'style="opacity:.5;pointer-events:none"' ?>>
             <input type="hidden" name="_csrf" value="<?= View::e($csrf) ?>">

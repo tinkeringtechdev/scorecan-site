@@ -40,8 +40,15 @@ View::flash();
         <?php else: ?>
             <span class="muted">Date not set — </span><a href="<?= View::url('admin/settings.php') ?>">set the tournament date</a> ·
         <?php endif; ?>
-        Overs per side: <strong><?= (int)$tournament['overs_per_side'] ?></strong> ·
+        <strong><?= (int)$tournament['overs_per_side'] ?></strong> overs per side ·
+        <strong><?= (int)($tournament['balls_per_over'] ?? 6) ?></strong>-ball overs ·
         Team size: <strong><?= (int)$tournament['team_size'] ?></strong>
+        <?php if (!empty($tournament['single_group'])): ?>
+            · <span class="innings-pill first">Single group</span>
+        <?php endif; ?>
+        <?php if (!empty($tournament['hide_fixtures_tab'])): ?>
+            · <span class="innings-pill second">Fixtures hidden</span>
+        <?php endif; ?>
     </p>
     <p>
         Teams: <strong><?= $counts['teams'] ?></strong>
@@ -58,7 +65,7 @@ View::flash();
         <p><a class="btn" href="<?= View::url('admin/match.php?id=new') ?>">+ Enter match score</a></p>
         <p><a class="btn ghost" href="<?= View::url('admin/fixtures.php') ?>">Fixture map (bulk entry)</a></p>
         <p><a class="btn ghost" href="<?= View::url('admin/results.php') ?>">View results</a></p>
-        <p><a class="btn gold" href="<?= View::url('admin/import-draw.php') ?>">📷 AI Import of Teams</a></p>
+        <p><a class="btn gold" href="<?= View::url('admin/import-draw.php') ?>">📷 AI Import (Teams &amp; Fixtures)</a></p>
     </div>
 
     <div class="card">

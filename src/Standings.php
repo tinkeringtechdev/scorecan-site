@@ -2,40 +2,40 @@
 /**
  * Group-stage standings calculator.
  *
- * Per team in a group:
+ * Per team:
  *   Played, Wins, Ties, Losses, Points (W*2 + T*1)
  *   Runs For, Wickets Lost, Balls Faced
  *   Runs Against, Balls Bowled
- *   NRR  = (RF/BF − RA/BB) * 6
+ *   NRR  = (RF/BF − RA/BB) * balls_per_over
  *   ARPW = RF / WL    (NULL if WL = 0)
  *
  * Sort: Points DESC, NRR DESC.
  *
- * Spreadsheet rule: if a team is bowled out before its quota, balls are treated as
- * the full quota. The admin form sets `home_all_out`/`away_all_out` and stores actual balls;
- * this query swaps in the full quota whenever the all-out flag is set.
+ * balls_per_over is now tournament-configurable (5 or 6). The multiplier at the
+ * end of the NRR formula uses this value, and overs↔balls conversions use it too.
+ *
+ * Spreadsheet rule: if a team is bowled out before its quota, balls are treated
+ * as the full quota (overs_per_side * balls_per_over).
  */
 
 class Standings {
 
-    /** All standings for a tournament, grouped by letter. Returns ['A' => [...rows], 'B' => ...]. */
+    /** All standings for a tournament, grouped by letter. */
     public static function allByGroup(int $tournamentId): array {
-        $tournament = Db::one('SELECT overs_per_side FROM tournaments WHERE id = ?', [$tournamentId]);
-        $quotaBalls = (int)$tournament['overs_per_side'] * 6;
+        $t = self::tournamentFormat($tournamentId);
+        $quotaBalls = $t['overs_per_side'] * $t['balls_per_over'];
 
         $sql = self::sql();
         $rows = Db::all($sql, [
-            ':qb1'      => $quotaBalls,
-            ':qb2'      => $quotaBalls,
-            ':qb3'      => $quotaBalls,
-            ':qb4'      => $quotaBalls,
-            ':tid'      => $tournamentId,
+            ':qb1' => $quotaBalls, ':qb2' => $quotaBalls,
+            ':qb3' => $quotaBalls, ':qb4' => $quotaBalls,
+            ':bpo' => $t['balls_per_over'],
+            ':tid' => $tournamentId,
         ]);
         $byGroup = [];
         foreach ($rows as $r) {
             $byGroup[$r['group_letter']][] = $r;
         }
-        // Already sorted by SQL — Points DESC, NRR DESC, name ASC.
         ksort($byGroup);
         return $byGroup;
     }
@@ -47,9 +47,8 @@ class Standings {
     }
 
     /**
-     * All teams (across all groups) ordered by group position then points then NRR.
-     * Used by the knockout auto-seeder to pick the top N.
-     * Each row gains a `group_position` (1=top of group) field.
+     * Flat ranked list of every team, ordered by group position → points → NRR.
+     * With single_group mode this collapses to points → NRR ranking of all teams.
      */
     public static function flatRanked(int $tournamentId): array {
         $byGroup = self::allByGroup($tournamentId);
@@ -60,8 +59,6 @@ class Standings {
                 $flat[] = $r;
             }
         }
-        // Order: group_position ASC (i.e. all 1st-placers, then 2nd-placers, …),
-        // then points DESC, then NRR DESC.
         usort($flat, function ($a, $b) {
             return [$a['group_position'], -$a['points'], -$a['nrr']]
                <=> [$b['group_position'], -$b['points'], -$b['nrr']];
@@ -69,12 +66,25 @@ class Standings {
         return $flat;
     }
 
+    /** Fetch tournament format defaults with sane fallbacks. */
+    public static function tournamentFormat(int $tournamentId): array {
+        $row = Db::one(
+            'SELECT overs_per_side, balls_per_over, team_size, single_group, hide_fixtures_tab
+             FROM tournaments WHERE id = ?',
+            [$tournamentId]
+        );
+        return [
+            'overs_per_side'    => (int)($row['overs_per_side'] ?? 5),
+            'balls_per_over'    => (int)($row['balls_per_over'] ?? 6),
+            'team_size'         => (int)($row['team_size'] ?? 6),
+            'single_group'      => (int)($row['single_group'] ?? 0),
+            'hide_fixtures_tab' => (int)($row['hide_fixtures_tab'] ?? 0),
+        ];
+    }
+
     /**
-     * The aggregation SQL. Built up via UNION of "home-side rows" and "away-side rows" so each
-     * complete match contributes once per participating team. Aggregated outside.
-     *
-     * Placeholder bindings (we use named placeholders even though they repeat — PDO requires
-     * unique names when emulation is off, so we pass :qb1..:qb4 with the same value).
+     * The aggregation SQL. balls_per_over is a bound parameter so NRR scales
+     * correctly for 5-ball and 6-ball tournaments.
      */
     private static function sql(): string {
         return <<<SQL
@@ -92,18 +102,16 @@ SELECT
     COALESCE(SUM(m.balls_faced),  0)                        AS balls_faced,
     COALESCE(SUM(m.runs_against), 0)                        AS runs_against,
     COALESCE(SUM(m.balls_bowled), 0)                        AS balls_bowled,
-    /* NRR — guard against /0 if no balls played */
     CASE
         WHEN SUM(m.balls_faced) > 0 AND SUM(m.balls_bowled) > 0 THEN
             ((SUM(m.runs_for)     / SUM(m.balls_faced))
-           - (SUM(m.runs_against) / SUM(m.balls_bowled))) * 6
+           - (SUM(m.runs_against) / SUM(m.balls_bowled))) * :bpo
         ELSE 0
     END                                                     AS nrr,
     CASE WHEN SUM(m.wkts_lost) > 0
          THEN SUM(m.runs_for) / SUM(m.wkts_lost) END        AS arpw
 FROM teams t
 LEFT JOIN (
-    /* HOME side */
     SELECT
         home_team_id            AS team_id,
         1                       AS played,
@@ -119,7 +127,6 @@ LEFT JOIN (
 
     UNION ALL
 
-    /* AWAY side */
     SELECT
         away_team_id            AS team_id,
         1                       AS played,
@@ -152,21 +159,26 @@ SQL;
         return number_format((float)$arpw, 1);
     }
 
-    /** Convert overs decimal (4.3 = 4 overs 3 balls) to balls. Matches spreadsheet column G/L. */
-    public static function oversToBalls(float $overs): int {
+    /**
+     * Convert overs decimal (e.g. 4.3 = 4 overs 3 balls) to balls.
+     * balls_per_over is now configurable; decimal must be in [0, balls_per_over-1].
+     */
+    public static function oversToBalls(float $overs, int $ballsPerOver = 6): int {
         $whole = (int)floor($overs);
-        $frac  = $overs - $whole;            // expected 0, 0.1, 0.2, 0.3, 0.4, 0.5
+        $frac  = $overs - $whole;
         $extraBalls = (int)round($frac * 10);
-        if ($extraBalls < 0 || $extraBalls > 5) {
-            throw new InvalidArgumentException("Invalid overs value: $overs (decimal must be .0–.5)");
+        if ($extraBalls < 0 || $extraBalls > $ballsPerOver - 1) {
+            throw new InvalidArgumentException(
+                "Invalid overs value: {$overs} (decimal must be .0–." . ($ballsPerOver - 1) . " for {$ballsPerOver}-ball overs)"
+            );
         }
-        return $whole * 6 + $extraBalls;
+        return $whole * $ballsPerOver + $extraBalls;
     }
 
     /** Inverse — balls back to overs decimal for display. */
-    public static function ballsToOvers(int $balls): string {
-        $overs = intdiv($balls, 6);
-        $rem   = $balls % 6;
+    public static function ballsToOvers(int $balls, int $ballsPerOver = 6): string {
+        $overs = intdiv($balls, $ballsPerOver);
+        $rem   = $balls % $ballsPerOver;
         return $overs . '.' . $rem;
     }
 }

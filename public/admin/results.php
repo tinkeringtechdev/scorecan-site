@@ -8,6 +8,7 @@ require __DIR__ . '/../bootstrap.php';
 Auth::require();
 
 $tournamentId = Db::activeTournamentId();
+$ballsPerOver = (int)(Db::scalar('SELECT balls_per_over FROM tournaments WHERE id = ?', [$tournamentId]) ?? 6);
 
 $rows = Db::all("
     SELECT m.*,
@@ -53,12 +54,12 @@ View::header('Results', 'admin');
                     <td>
                         <strong><?= View::e($first['name']) ?></strong>
                         <span class="muted"><?= (int)$first['r'] ?>/<?= (int)$first['w'] ?>
-                            (<?= View::e(Standings::ballsToOvers((int)$first['b'])) ?>)</span>
+                            (<?= View::e(Standings::ballsToOvers((int)$first['b'], $ballsPerOver)) ?>)</span>
                     </td>
                     <td>
                         <strong><?= View::e($second['name']) ?></strong>
                         <span class="muted"><?= (int)$second['r'] ?>/<?= (int)$second['w'] ?>
-                            (<?= View::e(Standings::ballsToOvers((int)$second['b'])) ?>)</span>
+                            (<?= View::e(Standings::ballsToOvers((int)$second['b'], $ballsPerOver)) ?>)</span>
                     </td>
                     <td>
                         <?php if ($m['status'] === 'no_result'): ?>

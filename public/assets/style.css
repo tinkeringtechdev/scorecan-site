@@ -550,6 +550,35 @@ body.tv-mode .site-footer .socials { display: none; }
 body.tv-mode .site-nav { display: none; }
 body.tv-mode nav { display: none; }
 
+/* Split layout: two tables side by side for large tournaments on small TVs. */
+body.tv-mode.tv-split .site-banner img { max-height: 90px; }   /* compact banner */
+body.tv-mode.tv-split .page { padding: 10px 20px; margin-top: 8px; }
+body.tv-mode.tv-split .tv-split-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    align-items: start;
+}
+body.tv-mode.tv-split .card { margin-bottom: 0; padding: 10px; }
+body.tv-mode.tv-split table.scoretable { font-size: 20px; }
+body.tv-mode.tv-split table.scoretable thead th {
+    font-size: 15px;
+    padding: 8px 8px;
+}
+body.tv-mode.tv-split table.scoretable tbody td {
+    padding: 8px 8px;
+    font-size: 20px;
+}
+body.tv-mode.tv-split table.scoretable tbody tr.cutline > td { border-bottom-width: 4px !important; padding-bottom: 8px; }
+body.tv-mode.tv-split table.scoretable tbody tr.cutline-caption > td {
+    font-size: 11px;
+    letter-spacing: 2px;
+    padding: 6px 4px;
+}
+/* Slightly more contrast between rows for 10-foot viewing. */
+body.tv-mode.tv-split table.scoretable tbody tr:nth-child(odd)  { background: rgba(255, 255, 255, 0.05); }
+body.tv-mode.tv-split table.scoretable tbody tr:nth-child(even) { background: rgba(255, 255, 255, 0.14); }
+
 /* Responsive ----------------------------------------------- */
 @media (max-width: 740px) {
     .site-nav .wrap { padding: 6px 8px; }

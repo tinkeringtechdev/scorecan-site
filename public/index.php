@@ -30,11 +30,11 @@ if ($source === 'manual') {
         [$tournamentId]
     );
     ?>
-    <h2>Standings</h2>
-    <p class="muted">
-        Auto-refreshing every 60 seconds.
-        <?php if ($lastUpdated): ?>Last updated <?= View::e(date('D, d M Y H:i', strtotime($lastUpdated))) ?>.<?php endif; ?>
-    </p>
+    <?php if ($lastUpdated): ?>
+        <p class="muted" style="text-align:center;font-size:12px;margin:0 0 10px">
+            Last updated <?= View::e(date('D, d M Y H:i', strtotime($lastUpdated))) ?>
+        </p>
+    <?php endif; ?>
 
     <?php if (empty($manual)): ?>
         <div class="card"><p class="muted" style="margin:0">Standings will appear here once the admin uploads them.</p></div>
@@ -91,15 +91,6 @@ if ($source === 'manual') {
     // -----------------------------------------------------------
     $byGroup = Standings::allByGroup($tournamentId);
     ?>
-    <h2>Live Standings</h2>
-    <p class="muted">
-        Auto-refreshing every 60 seconds.
-        <?php if ($singleGroup): ?>
-            Top 8 teams qualify for the knockouts.
-        <?php else: ?>
-            Top teams in each group qualify for the knockouts.
-        <?php endif; ?>
-    </p>
 
     <?php if ($singleGroup): ?>
         <?php View::standingsFlatTable($byGroup, 8); ?>

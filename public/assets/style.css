@@ -342,10 +342,11 @@ form .actions { margin-top: 14px; }
 body.home-hero .site-banner { display: none; }
 body.home-hero {
     background-image: url('img/peters_banner.png');
-    background-attachment: fixed;
-    background-size: cover;
+    background-color: var(--spc-blue-dark);       /* fills below the image */
+    background-size: 100% auto;                    /* fill width, no cropping */
     background-position: center top;
     background-repeat: no-repeat;
+    background-attachment: scroll;                 /* fixed misbehaves on iOS Safari */
 }
 body.home-hero::before {
     background: linear-gradient(180deg, rgba(15, 30, 60, 0.35) 0%, rgba(15, 30, 60, 0.85) 100%);

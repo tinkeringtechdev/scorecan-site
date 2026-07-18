@@ -109,8 +109,8 @@ class View {
             $items[] = ['href' => 'fixtures.php',  'key' => 'fixtures',  'label' => 'Fixtures'];
         }
         $items[] = ['href' => 'knockouts.php', 'key' => 'knockouts', 'label' => 'Knockouts'];
-        $items[] = ['href' => 'tv.php',        'key' => 'tv',        'label' => 'TV View'];
-        $items[] = ['href' => 'admin/',        'key' => 'admin',     'label' => 'Admin'];
+        // TV view and Admin are intentionally NOT in the public nav —
+        // reach them via /tv.php and /admin/ directly.
         foreach ($items as $it):
             $cls = $it['key'] === $activeNav ? ' class="active"' : '';
             ?><a href="<?= self::e($base . $it['href']) ?>"<?= $cls ?>><?= self::e($it['label']) ?></a><?php

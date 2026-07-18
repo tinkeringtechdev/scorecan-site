@@ -20,9 +20,10 @@ if ($source === 'manual') {
     // -----------------------------------------------------------
     // Manual mode: render whatever rows the admin uploaded.
     // -----------------------------------------------------------
+    // Rank by Points DESC, NRR as tie-breaker (uploaded "position" column ignored).
     $manual = Db::all(
         'SELECT * FROM manual_standings WHERE tournament_id = ?
-         ORDER BY position IS NULL, position ASC, points DESC, nrr DESC',
+         ORDER BY points DESC, nrr DESC, team_name ASC',
         [$tournamentId]
     );
     $lastUpdated = Db::scalar(
@@ -66,7 +67,7 @@ if ($source === 'manual') {
                     $cls    = $isCut ? ' class="cutline"' : '';
                 ?>
                     <tr<?= $cls ?>>
-                        <td class="num"><strong><?= (int)($r['position'] ?? ($i + 1)) ?></strong></td>
+                        <td class="num"><strong><?= $i + 1 ?></strong></td>
                         <td class="team"><?= View::e($r['team_name']) ?></td>
                         <td class="num"><?= (int)$r['played'] ?></td>
                         <td class="num"><?= (int)$r['wins'] ?></td>

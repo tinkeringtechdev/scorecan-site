@@ -64,10 +64,9 @@ a:hover { color: var(--spc-blue-dark); text-decoration: underline; }
 .site-banner img {
     display: block;
     margin: 0 auto;
-    max-width: 100%;        /* never overflow horizontally */
-    max-height: 150px;      /* cap banner height */
-    width: auto;
-    height: auto;           /* preserves aspect ratio */
+    width: 100%;
+    max-width: 1400px;      /* fills page width up to 1400px on desktop */
+    height: auto;           /* scales with aspect ratio, no cropping */
 }
 
 /* Nav strip below banner ----------------------------------- */

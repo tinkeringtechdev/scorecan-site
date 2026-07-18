@@ -175,12 +175,6 @@ $csrf = Auth::csrfToken();
 </div>
 
 <?php if ($totalCount > 0): ?>
-<!-- Bulk-delete form: checkboxes in each row reference this by id. -->
-<form id="bulk-form" method="post" style="display:inline">
-    <input type="hidden" name="_csrf" value="<?= View::e($csrf) ?>">
-    <input type="hidden" name="action" value="bulk_delete">
-</form>
-
 <div class="card">
     <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px">
         <div>
@@ -191,7 +185,7 @@ $csrf = Auth::csrfToken();
             <span class="muted" id="selection-count" style="margin-left:8px">0 selected</span>
         </div>
         <div>
-            <button class="btn small danger" form="bulk-form" data-confirm="Delete the selected teams? Teams that are already in matches will be skipped.">
+            <button type="button" id="bulk-delete-btn" class="btn small danger" disabled>
                 Delete selected
             </button>
         </div>
@@ -200,14 +194,22 @@ $csrf = Auth::csrfToken();
 
 <script>
 (function () {
+    var CSRF = <?= json_encode($csrf) ?>;
+    var ACTION_URL = <?= json_encode(View::url('admin/teams.php')) ?>;
+
     var selectAll = document.getElementById('select-all-teams');
     var countEl   = document.getElementById('selection-count');
-    function boxes() { return document.querySelectorAll('input[form="bulk-form"][name="ids[]"]'); }
+    var btn       = document.getElementById('bulk-delete-btn');
+
+    function boxes() { return document.querySelectorAll('input.bulk-team-cb'); }
+    function selected() {
+        return Array.prototype.filter.call(boxes(), function (b) { return b.checked; });
+    }
     function updateCount() {
-        var n = 0;
-        boxes().forEach(function (b) { if (b.checked) n++; });
-        countEl.textContent = n + ' selected';
-        if (selectAll) selectAll.checked = (n > 0 && n === boxes().length);
+        var sel = selected();
+        countEl.textContent = sel.length + ' selected';
+        btn.disabled = sel.length === 0;
+        if (selectAll) selectAll.checked = boxes().length > 0 && sel.length === boxes().length;
     }
     if (selectAll) {
         selectAll.addEventListener('change', function () {
@@ -216,8 +218,33 @@ $csrf = Auth::csrfToken();
         });
     }
     document.addEventListener('change', function (e) {
-        if (e.target && e.target.matches('input[form="bulk-form"][name="ids[]"]')) updateCount();
+        if (e.target && e.target.classList && e.target.classList.contains('bulk-team-cb')) updateCount();
     });
+
+    btn.addEventListener('click', function () {
+        var sel = selected();
+        if (sel.length === 0) return;
+        if (!confirm('Delete ' + sel.length + ' selected team(s)? Teams already used in matches will be skipped.')) return;
+
+        // Build a hidden form and submit — sidesteps any HTML nesting issues.
+        var f = document.createElement('form');
+        f.method = 'post';
+        f.action = ACTION_URL;
+        f.style.display = 'none';
+        function addInput(name, value) {
+            var i = document.createElement('input');
+            i.type = 'hidden';
+            i.name = name;
+            i.value = value;
+            f.appendChild(i);
+        }
+        addInput('_csrf',  CSRF);
+        addInput('action', 'bulk_delete');
+        sel.forEach(function (cb) { addInput('ids[]', cb.value); });
+        document.body.appendChild(f);
+        f.submit();
+    });
+
     updateCount();
 })();
 </script>
@@ -243,7 +270,7 @@ $csrf = Auth::csrfToken();
         <?php foreach ($byGroup[$letter] as $t): ?>
             <tr>
                 <td style="text-align:center">
-                    <input type="checkbox" form="bulk-form" name="ids[]" value="<?= (int)$t['id'] ?>">
+                    <input type="checkbox" class="bulk-team-cb" value="<?= (int)$t['id'] ?>">
                 </td>
                 <form method="post" style="display:contents">
                     <input type="hidden" name="_csrf" value="<?= View::e($csrf) ?>">

@@ -104,6 +104,7 @@ class View {
         $items = [
             ['href' => 'index.php',     'key' => 'home',      'label' => 'Standings'],
             ['href' => 'schedule.php',  'key' => 'schedule',  'label' => 'Schedule'],
+            ['href' => 'playoff.php',   'key' => 'playoff',   'label' => 'Playoff'],
         ];
         if (empty($t['hide_fixtures_tab'])) {
             $items[] = ['href' => 'fixtures.php',  'key' => 'fixtures',  'label' => 'Fixtures'];

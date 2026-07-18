@@ -474,6 +474,138 @@ body.home-hero .site-footer {
     border-top-color: rgba(255,255,255,0.15);
 }
 
+/* Playoff bracket (FIFA-style) ---------------------------- */
+body.playoff-page .page { max-width: 100%; padding: 0 20px; }
+
+.playoff-bracket {
+    display: flex;
+    gap: 32px;
+    padding: 30px 10px 40px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    color: #fff;
+    align-items: stretch;
+}
+.playoff-bracket .round {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+    min-width: 240px;
+    flex: 0 0 auto;
+}
+.playoff-bracket .round-title {
+    color: var(--spc-gold);
+    text-align: center;
+    font-size: 13px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    font-weight: 800;
+    margin-bottom: 14px;
+    text-shadow: 0 1px 4px rgba(0,0,0,0.6);
+}
+.playoff-bracket .match-card {
+    background: rgba(8, 18, 40, 0.94);
+    border: 2px solid var(--spc-gold);
+    border-radius: 10px;
+    padding: 10px 12px;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.55);
+    position: relative;
+    margin: 14px 0;
+}
+.playoff-bracket .match-card .team {
+    display: flex;
+    align-items: center;
+    padding: 8px 4px;
+    gap: 10px;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+    font-size: 15px;
+}
+.playoff-bracket .match-card .team:last-child { border-bottom: none; }
+.playoff-bracket .match-card .team .seed {
+    display: inline-flex;
+    width: 26px; height: 26px;
+    background: var(--spc-gold);
+    color: #0a1428;
+    justify-content: center;
+    align-items: center;
+    border-radius: 50%;
+    font-weight: 800;
+    font-size: 12px;
+    flex-shrink: 0;
+}
+.playoff-bracket .match-card .team .name { flex: 1; font-weight: 600; }
+.playoff-bracket .match-card .team .score {
+    font-family: monospace;
+    font-weight: 700;
+    color: rgba(255,255,255,0.85);
+    font-size: 14px;
+}
+.playoff-bracket .match-card .team.winner {
+    color: var(--spc-gold);
+    font-weight: 800;
+}
+.playoff-bracket .match-card .team.winner .name { font-weight: 800; }
+.playoff-bracket .match-card .team.winner .score { color: var(--spc-gold); }
+.playoff-bracket .match-card .team.loser { opacity: 0.55; }
+.playoff-bracket .match-card .badge {
+    position: absolute;
+    top: -10px; right: 10px;
+    background: var(--spc-gold);
+    color: #0a1428;
+    font-size: 10px;
+    font-weight: 800;
+    padding: 3px 8px;
+    border-radius: 999px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+/* Connector line from each match to the next round (except Champion). */
+.playoff-bracket .round:not(.round-champ) .match-card::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    right: -32px;
+    width: 32px;
+    height: 2px;
+    background: var(--spc-gold);
+    opacity: 0.7;
+}
+/* Vertical merge lines for QF pairs into SFs. */
+.playoff-bracket .round-qf .match-card:nth-child(2)::before,
+.playoff-bracket .round-qf .match-card:nth-child(4)::before,
+.playoff-bracket .round-sf .match-card::before {
+    /* placeholder — leave decorative connectors for now */
+}
+
+/* Champion card at the far right. */
+.playoff-bracket .round-champ {
+    justify-content: center;
+    min-width: 220px;
+}
+.playoff-bracket .champion-card {
+    background: linear-gradient(135deg, var(--spc-gold) 0%, #b48c33 100%);
+    color: #0a1428;
+    border: 3px solid #fff;
+    border-radius: 12px;
+    padding: 24px 16px;
+    text-align: center;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5), 0 0 40px rgba(201,161,74,0.4);
+}
+.playoff-bracket .champion-card .trophy { font-size: 46px; line-height: 1; margin-bottom: 8px; }
+.playoff-bracket .champion-card .champion-name {
+    font-size: 18px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+/* Mobile: bracket scrolls horizontally. Reduce inner spacing. */
+@media (max-width: 740px) {
+    .playoff-bracket { gap: 22px; padding: 16px 0 20px; }
+    .playoff-bracket .round { min-width: 200px; }
+    .playoff-bracket .match-card .team { font-size: 14px; }
+}
+
 /* TV / Kiosk display -------------------------------------- */
 /* Applied via <body class="tv-mode"> on /tv.php. Inherits the home-hero
    look (banner image as background, gold-bordered cards) — TV mode just

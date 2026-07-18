@@ -109,8 +109,8 @@ class View {
         if (empty($t['hide_fixtures_tab'])) {
             $items[] = ['href' => 'fixtures.php',  'key' => 'fixtures',  'label' => 'Fixtures'];
         }
-        $items[] = ['href' => 'knockouts.php', 'key' => 'knockouts', 'label' => 'Knockouts'];
-        // TV view and Admin are intentionally NOT in the public nav —
+        // Knockouts hidden for now — reach via /knockouts.php directly if needed.
+        // TV view and Admin are also intentionally NOT in the public nav —
         // reach them via /tv.php and /admin/ directly.
         foreach ($items as $it):
             $cls = $it['key'] === $activeNav ? ' class="active"' : '';

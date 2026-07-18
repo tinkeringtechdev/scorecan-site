@@ -389,10 +389,19 @@ body.home-hero .card .group-title {
     border-radius: 8px 8px 0 0;
     margin: -18px -18px 12px;
 }
-/* Table: bigger, bolder, higher contrast. */
+/* Table: bigger, bolder, higher contrast, capped width so the Team column
+   doesn't stretch across empty space in a wide card. */
 body.home-hero table.scoretable {
     color: #fff;
     font-size: 16px;
+    max-width: 780px;
+    margin: 0 auto;
+}
+/* Numeric columns get sensible widths so the Team column is only as wide as it needs. */
+body.home-hero table.scoretable th:not(:nth-child(2)),
+body.home-hero table.scoretable td:not(:nth-child(2)) {
+    width: 1%;
+    white-space: nowrap;
 }
 body.home-hero table.scoretable thead th {
     background: var(--spc-gold);

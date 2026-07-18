@@ -72,23 +72,25 @@ class View {
         return self::$tournament;
     }
 
-    public static function header(string $pageTitle, string $activeNav = '', bool $autoRefresh = false): void {
+    public static function header(string $pageTitle, string $activeNav = '', bool $autoRefresh = false, array $opts = []): void {
         $t = self::tournament();
         $pageDoc = $pageTitle === '' ? $t['name'] : ($pageTitle . ' · ' . $t['name']);
         $base = self::base();
+        $bodyClass    = trim((string)($opts['body_class']    ?? ''));
+        $refreshSecs  = (int)($opts['refresh_seconds']       ?? ($autoRefresh ? 60 : 0));
         ?><!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <?php if ($autoRefresh): ?>
-    <meta http-equiv="refresh" content="60">
+    <?php if ($refreshSecs > 0): ?>
+    <meta http-equiv="refresh" content="<?= $refreshSecs ?>">
     <?php endif; ?>
     <title><?= self::e($pageDoc) ?></title>
     <link rel="stylesheet" href="<?= self::e(self::asset('assets/style.css')) ?>">
     <script src="<?= self::e(self::asset('assets/app.js')) ?>" defer></script>
 </head>
-<body>
+<body<?= $bodyClass !== '' ? ' class="' . self::e($bodyClass) . '"' : '' ?>>
 <header class="site-banner">
     <a href="<?= self::e($base) ?>">
         <img src="<?= self::e(self::asset('assets/img/peters_banner.png')) ?>"
@@ -106,6 +108,7 @@ class View {
             $items[] = ['href' => 'fixtures.php',  'key' => 'fixtures',  'label' => 'Fixtures'];
         }
         $items[] = ['href' => 'knockouts.php', 'key' => 'knockouts', 'label' => 'Knockouts'];
+        $items[] = ['href' => 'tv.php',        'key' => 'tv',        'label' => 'TV View'];
         $items[] = ['href' => 'admin/',        'key' => 'admin',     'label' => 'Admin'];
         foreach ($items as $it):
             $cls = $it['key'] === $activeNav ? ' class="active"' : '';
@@ -142,8 +145,11 @@ class View {
         <?php
     }
 
-    /** Render a single group's standings table. */
-    public static function standingsTable(string $letter, array $rows, int $highlightTop = 0): void {
+    /**
+     * Render a single group's standings table.
+     * $cutAt = row index (1-based) after which to draw the cutline. 0 = no cutline.
+     */
+    public static function standingsTable(string $letter, array $rows, int $cutAt = 0): void {
         ?>
         <div class="card">
             <div class="group-title">Group <?= self::e($letter) ?></div>
@@ -161,7 +167,9 @@ class View {
                     <tr><td colspan="7" style="text-align:center;color:var(--text-muted)">No teams in this group yet.</td></tr>
                 <?php else: ?>
                     <?php foreach ($rows as $i => $r):
-                        $cls = ($highlightTop > 0 && $i < $highlightTop) ? ' class="qualifier"' : '';
+                        $rowNum = $i + 1;
+                        $isCut  = ($cutAt > 0 && $rowNum === $cutAt);
+                        $cls    = $isCut ? ' class="cutline"' : '';
                     ?>
                     <tr<?= $cls ?>>
                         <td class="team"><?= self::e($r['team_name']) ?></td>
@@ -172,6 +180,9 @@ class View {
                         <td class="num"><strong><?= (int)$r['points'] ?></strong></td>
                         <td class="num"><?= self::e(Standings::fmtNrr($r['nrr'])) ?></td>
                     </tr>
+                    <?php if ($isCut && count($rows) > $rowNum): ?>
+                        <tr class="cutline-caption"><td colspan="7">Top <?= (int)$cutAt ?> qualify</td></tr>
+                    <?php endif; ?>
                     <?php endforeach; ?>
                 <?php endif; ?>
                 </tbody>
@@ -182,11 +193,10 @@ class View {
     }
 
     /**
-     * Render one big flat standings table with a Rank column and the top N
-     * highlighted. Used when the tournament is set to single_group mode
-     * (e.g. 22 teams all in one pool).
+     * Render one big flat standings table with a Rank column and a cutline
+     * after row N (default 8 — top 8 to QFs). Used in single-group mode.
      */
-    public static function standingsFlatTable(array $rows, int $highlightTop = 8): void {
+    public static function standingsFlatTable(array $rows, int $cutAt = 8): void {
         // rows may come per-group; flatten and re-sort by points DESC, NRR DESC.
         $flat = [];
         foreach ($rows as $groupKey => $groupRows) {
@@ -201,7 +211,7 @@ class View {
         });
         ?>
         <div class="card">
-            <div class="group-title">All Teams &mdash; Top <?= (int)$highlightTop ?> Qualify</div>
+            <div class="group-title">All Teams &mdash; Top <?= (int)$cutAt ?> Qualify</div>
             <div class="table-wrap">
             <table class="scoretable">
                 <thead>
@@ -217,7 +227,9 @@ class View {
                     <tr><td colspan="8" style="text-align:center;color:var(--text-muted)">No teams yet.</td></tr>
                 <?php else: ?>
                     <?php foreach ($flat as $i => $r):
-                        $cls = ($highlightTop > 0 && $i < $highlightTop) ? ' class="qualifier"' : '';
+                        $rowNum = $i + 1;
+                        $isCut  = ($cutAt > 0 && $rowNum === $cutAt);
+                        $cls    = $isCut ? ' class="cutline"' : '';
                     ?>
                     <tr<?= $cls ?>>
                         <td class="num"><strong><?= $i + 1 ?></strong></td>
@@ -229,6 +241,9 @@ class View {
                         <td class="num"><strong><?= (int)$r['points'] ?></strong></td>
                         <td class="num"><?= self::e(Standings::fmtNrr($r['nrr'])) ?></td>
                     </tr>
+                    <?php if ($isCut && count($flat) > $rowNum): ?>
+                        <tr class="cutline-caption"><td colspan="8">Top <?= (int)$cutAt ?> qualify</td></tr>
+                    <?php endif; ?>
                     <?php endforeach; ?>
                 <?php endif; ?>
                 </tbody>

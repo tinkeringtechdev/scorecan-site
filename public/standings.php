@@ -54,7 +54,9 @@ View::header('Standings', 'home', true);
         </thead>
         <tbody>
         <?php foreach ($flat as $i => $r):
-            $cls = $i < 8 ? ' class="qualifier"' : '';
+            $rowNum = $i + 1;
+            $isCut  = $rowNum === 8;
+            $cls    = $isCut ? ' class="cutline"' : '';
         ?>
             <tr<?= $cls ?>>
                 <td class="num"><strong><?= $i + 1 ?></strong></td>
@@ -70,6 +72,9 @@ View::header('Standings', 'home', true);
                 <td class="num"><?= View::e(Standings::fmtArpw($r['arpw'])) ?></td>
                 <td class="num"><strong><?= (int)$r['points'] ?></strong></td>
             </tr>
+            <?php if ($isCut && count($flat) > $rowNum): ?>
+                <tr class="cutline-caption"><td colspan="12">Top 8 qualify</td></tr>
+            <?php endif; ?>
         <?php endforeach; ?>
         </tbody>
     </table>
@@ -96,7 +101,9 @@ View::header('Standings', 'home', true);
         </thead>
         <tbody>
         <?php foreach ($rows as $i => $r):
-            $cls = $i < 2 ? ' class="qualifier"' : '';
+            $rowNum = $i + 1;
+            $isCut  = $rowNum === 2;
+            $cls    = $isCut ? ' class="cutline"' : '';
         ?>
             <tr<?= $cls ?>>
                 <td class="team"><?= View::e($r['team_name']) ?></td>
@@ -111,6 +118,9 @@ View::header('Standings', 'home', true);
                 <td class="num"><?= View::e(Standings::fmtArpw($r['arpw'])) ?></td>
                 <td class="num"><strong><?= (int)$r['points'] ?></strong></td>
             </tr>
+            <?php if ($isCut && count($rows) > $rowNum): ?>
+                <tr class="cutline-caption"><td colspan="11">Top 2 qualify</td></tr>
+            <?php endif; ?>
         <?php endforeach; ?>
         </tbody>
     </table>

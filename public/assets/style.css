@@ -159,9 +159,21 @@ table.scoretable tbody tr:nth-child(odd)  { background: var(--card); }
 table.scoretable tbody tr:nth-child(even) { background: var(--row-alt); }
 table.scoretable tbody td.num { text-align: right; font-variant-numeric: tabular-nums; }
 table.scoretable tbody td.team { font-weight: 600; }
-table.scoretable tbody tr.qualifier td.team::before {
-    content: "▲ ";
-    color: var(--spc-gold);
+/* Cutline: heavy gold line under row N (usually row 8 for "top 8 qualify"). */
+table.scoretable tbody tr.cutline > td {
+    border-bottom: 4px solid var(--spc-gold) !important;
+    padding-bottom: 10px;
+}
+table.scoretable tbody tr.cutline-caption > td {
+    background: var(--spc-gold-soft) !important;
+    color: var(--spc-blue-dark);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    text-align: center;
+    font-size: 11px;
+    padding: 6px 8px;
+    border-top: 4px solid var(--spc-gold);
 }
 table.scoretable .group-title {
     background: var(--spc-blue-dark);
@@ -325,6 +337,82 @@ form .actions { margin-top: 14px; }
 }
 .bracket .match .team { display:flex; justify-content:space-between; padding:2px 0; }
 .bracket .match .team.win { font-weight: 700; color: var(--spc-blue-dark); }
+
+/* TV / Kiosk display -------------------------------------- */
+/* Applied via <body class="tv-mode"> on the /tv.php page. Optimized for
+   viewing across a room on a large screen — dark background, big fonts,
+   minimal chrome. */
+body.tv-mode {
+    background: linear-gradient(180deg, #0d1a35 0%, var(--spc-blue-dark) 100%);
+    background-image: none;
+    color: #fff;
+}
+body.tv-mode::before { display: none; }
+body.tv-mode .site-banner {
+    background: transparent;
+    border-bottom-color: var(--spc-gold);
+    padding: 8px 0;
+    box-shadow: none;
+}
+body.tv-mode .site-banner img { max-height: 120px; }
+body.tv-mode .page { max-width: 100%; margin-top: 20px; padding: 0 40px; }
+body.tv-mode .page h2 {
+    color: #fff;
+    font-size: 34px;
+    text-align: center;
+    border-left: none;
+    padding-left: 0;
+    margin-bottom: 4px;
+}
+body.tv-mode .page p.muted { text-align: center; color: rgba(255,255,255,.65); font-size: 16px; }
+body.tv-mode .card {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.10);
+    box-shadow: 0 4px 24px rgba(0, 0, 0, .3);
+    border-radius: 12px;
+}
+body.tv-mode table.scoretable { font-size: 26px; }
+body.tv-mode table.scoretable thead th {
+    background: var(--spc-blue-dark);
+    color: var(--spc-gold-soft);
+    font-size: 22px;
+    letter-spacing: 1px;
+    padding: 14px 12px;
+    border-color: rgba(0, 0, 0, .3);
+}
+body.tv-mode table.scoretable tbody td {
+    padding: 14px 12px;
+    color: #fff;
+    border-color: rgba(255, 255, 255, .10);
+}
+body.tv-mode table.scoretable tbody tr:nth-child(odd)  { background: rgba(255, 255, 255, .04); }
+body.tv-mode table.scoretable tbody tr:nth-child(even) { background: rgba(255, 255, 255, .10); }
+body.tv-mode table.scoretable tbody tr.cutline > td {
+    border-bottom: 6px solid var(--spc-gold) !important;
+}
+body.tv-mode table.scoretable tbody tr.cutline-caption > td {
+    background: var(--spc-gold) !important;
+    color: #1c1300;
+    font-size: 15px;
+    letter-spacing: 4px;
+    padding: 10px 8px;
+}
+body.tv-mode .group-title {
+    background: transparent;
+    color: var(--spc-gold);
+    font-size: 20px;
+    padding: 6px 0;
+    letter-spacing: 3px;
+}
+body.tv-mode .site-footer {
+    background: transparent;
+    color: rgba(255,255,255,.55);
+    border-top-color: rgba(255,255,255,.10);
+    font-size: 14px;
+}
+body.tv-mode .site-footer .socials { display: none; }
+body.tv-mode .site-nav { display: none; }
+body.tv-mode nav { display: none; }
 
 /* Responsive ----------------------------------------------- */
 @media (max-width: 740px) {

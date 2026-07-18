@@ -55,7 +55,9 @@ if ($source === 'manual') {
                 </thead>
                 <tbody>
                 <?php foreach ($manual as $i => $r):
-                    $cls = ($singleGroup && $i < 8) ? ' class="qualifier"' : '';
+                    $rowNum = $i + 1;
+                    $isCut  = ($singleGroup && $rowNum === 8);
+                    $cls    = $isCut ? ' class="cutline"' : '';
                 ?>
                     <tr<?= $cls ?>>
                         <td class="num"><strong><?= (int)($r['position'] ?? ($i + 1)) ?></strong></td>
@@ -67,6 +69,9 @@ if ($source === 'manual') {
                         <td class="num"><strong><?= (int)$r['points'] ?></strong></td>
                         <td class="num"><?= $r['nrr'] !== null ? View::e(Standings::fmtNrr($r['nrr'])) : '—' ?></td>
                     </tr>
+                    <?php if ($isCut && count($manual) > $rowNum): ?>
+                        <tr class="cutline-caption"><td colspan="8">Top 8 qualify</td></tr>
+                    <?php endif; ?>
                 <?php endforeach; ?>
                 </tbody>
             </table>

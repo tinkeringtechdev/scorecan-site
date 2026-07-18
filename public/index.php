@@ -14,7 +14,7 @@ $t            = View::tournament();
 $source       = $t['standings_source'] ?? 'calculated';
 $singleGroup  = !empty($t['single_group']);
 
-View::header('Standings', 'home', true);
+View::header('Standings', 'home', true, ['body_class' => 'home-hero']);
 
 if ($source === 'manual') {
     // -----------------------------------------------------------

@@ -337,6 +337,79 @@ form .actions { margin-top: 14px; }
 .bracket .match .team { display:flex; justify-content:space-between; padding:2px 0; }
 .bracket .match .team.win { font-weight: 700; color: var(--spc-blue-dark); }
 
+/* Home hero — banner as background, standings floating on top ------- */
+/* Enabled by adding <body class="home-hero"> on the home page. */
+body.home-hero .site-banner { display: none; }
+body.home-hero {
+    background-image: url('img/peters_banner.png');
+    background-attachment: fixed;
+    background-size: cover;
+    background-position: center top;
+    background-repeat: no-repeat;
+}
+body.home-hero::before {
+    background: linear-gradient(180deg, rgba(15, 30, 60, 0.35) 0%, rgba(15, 30, 60, 0.85) 100%);
+}
+body.home-hero .page {
+    max-width: 1300px;
+    margin: 30px auto 60px;
+    padding: 0 20px;
+    position: relative;
+}
+body.home-hero .page h2 {
+    color: #fff;
+    text-align: center;
+    border-left: none;
+    padding-left: 0;
+    font-size: 28px;
+    text-shadow: 0 2px 8px rgba(0,0,0,0.5);
+}
+body.home-hero .page p.muted {
+    color: rgba(255,255,255,0.85);
+    text-align: center;
+    font-size: 15px;
+}
+body.home-hero .card {
+    background: rgba(15, 30, 60, 0.82);
+    color: #fff;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+}
+body.home-hero .card .group-title {
+    background: var(--spc-blue-dark);
+    color: var(--spc-gold);
+}
+body.home-hero table.scoretable { color: #fff; }
+body.home-hero table.scoretable thead th {
+    background: var(--spc-blue-dark);
+    color: var(--spc-gold-soft);
+    border-color: rgba(0,0,0,0.5);
+}
+body.home-hero table.scoretable tbody td {
+    color: #fff;
+    border-color: rgba(255, 255, 255, 0.10);
+}
+body.home-hero table.scoretable tbody tr:nth-child(odd)  { background: rgba(255, 255, 255, 0.04); }
+body.home-hero table.scoretable tbody tr:nth-child(even) { background: rgba(255, 255, 255, 0.10); }
+body.home-hero table.scoretable tbody tr.cutline > td {
+    border-bottom: 5px solid var(--spc-gold) !important;
+}
+body.home-hero table.scoretable tbody tr.cutline-caption > td {
+    background: var(--spc-gold) !important;
+    color: #1c1300;
+    border-top: 5px solid var(--spc-gold);
+}
+body.home-hero .site-nav {
+    background: linear-gradient(135deg, rgba(31, 59, 107, 0.95), rgba(21, 41, 74, 0.95));
+    backdrop-filter: blur(6px);
+    border-bottom-color: var(--spc-gold);
+}
+body.home-hero .site-footer {
+    background: rgba(15, 30, 60, 0.75);
+    color: rgba(255,255,255,0.7);
+    border-top-color: rgba(255,255,255,0.15);
+}
+
 /* TV / Kiosk display -------------------------------------- */
 /* Applied via <body class="tv-mode"> on the /tv.php page. Optimized for
    viewing across a room on a large screen — dark background, big fonts,

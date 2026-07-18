@@ -475,109 +475,128 @@ body.home-hero .site-footer {
 }
 
 /* TV / Kiosk display -------------------------------------- */
-/* Applied via <body class="tv-mode"> on the /tv.php page. Optimized for
-   viewing across a room on a large screen — dark background, big fonts,
-   minimal chrome. */
+/* Applied via <body class="tv-mode"> on /tv.php. Inherits the home-hero
+   look (banner image as background, gold-bordered cards) — TV mode just
+   removes the nav/footer, hides the top banner element, and provides
+   compact fallback rules for smaller screens. */
 body.tv-mode {
-    background: linear-gradient(180deg, #0d1a35 0%, var(--spc-blue-dark) 100%);
-    background-image: none;
+    background-image: url('img/peters_banner.png');
+    background-color: var(--spc-blue-dark);
+    background-size: 100% auto;
+    background-position: center 0;
+    background-repeat: no-repeat;
+    background-attachment: scroll;
     color: #fff;
 }
-body.tv-mode::before { display: none; }
-body.tv-mode .site-banner {
-    background: transparent;
-    border-bottom-color: var(--spc-gold);
-    padding: 8px 0;
-    box-shadow: none;
+body.tv-mode::before {
+    content: "";
+    position: fixed; inset: 0;
+    background: linear-gradient(180deg, rgba(15, 30, 60, 0.35) 0%, rgba(15, 30, 60, 0.85) 100%);
+    z-index: -1;
 }
-body.tv-mode .site-banner img { max-height: 120px; }
-body.tv-mode .page { max-width: 100%; margin-top: 20px; padding: 0 40px; }
+body.tv-mode .site-banner { display: none; }
+body.tv-mode .site-nav    { display: none; }
+body.tv-mode nav          { display: none; }
+body.tv-mode .site-footer { display: none; }
+
+body.tv-mode .page {
+    max-width: 100%;
+    margin: 13vw auto 20px;      /* leave the banner top visible above the tables */
+    padding: 0 30px;
+    position: relative;
+}
 body.tv-mode .page h2 {
     color: #fff;
-    font-size: 34px;
     text-align: center;
     border-left: none;
     padding-left: 0;
-    margin-bottom: 4px;
+    font-size: 26px;
+    text-shadow: 0 2px 8px rgba(0,0,0,0.5);
 }
-body.tv-mode .page p.muted { text-align: center; color: rgba(255,255,255,.65); font-size: 16px; }
+body.tv-mode .page p.muted { text-align: center; color: rgba(255,255,255,0.85); font-size: 14px; }
+
+/* Reuse the home-hero card + table styling (gold border, dark background,
+   gold headers, gold-accent numbers). */
 body.tv-mode .card {
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.10);
-    box-shadow: 0 4px 24px rgba(0, 0, 0, .3);
+    background: rgba(8, 18, 40, 0.94);
+    color: #fff;
+    border: 2px solid var(--spc-gold);
     border-radius: 12px;
+    box-shadow: 0 10px 50px rgba(0, 0, 0, 0.7);
+    padding: 14px 16px;
 }
-body.tv-mode table.scoretable { font-size: 26px; }
+body.tv-mode table.scoretable { color: #fff; font-size: 22px; }
 body.tv-mode table.scoretable thead th {
-    background: var(--spc-blue-dark);
-    color: var(--spc-gold-soft);
-    font-size: 22px;
-    letter-spacing: 1px;
-    padding: 14px 12px;
-    border-color: rgba(0, 0, 0, .3);
+    background: var(--spc-gold);
+    color: #0a1428;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    padding: 12px 10px;
+    font-size: 15px;
+    border-color: rgba(0, 0, 0, 0.35);
 }
 body.tv-mode table.scoretable tbody td {
-    padding: 14px 12px;
     color: #fff;
-    border-color: rgba(255, 255, 255, .10);
+    padding: 10px 10px;
+    border-color: rgba(255, 255, 255, 0.18);
+    font-size: 20px;
 }
-body.tv-mode table.scoretable tbody tr:nth-child(odd)  { background: rgba(255, 255, 255, .04); }
-body.tv-mode table.scoretable tbody tr:nth-child(even) { background: rgba(255, 255, 255, .10); }
+body.tv-mode table.scoretable tbody td.team { font-weight: 700; letter-spacing: 0.3px; }
+body.tv-mode table.scoretable tbody td.num strong { color: var(--spc-gold); font-size: 22px; text-shadow: 0 1px 3px rgba(0,0,0,0.4); }
+body.tv-mode table.scoretable tbody tr:nth-child(odd)  { background: rgba(255, 255, 255, 0.03); }
+body.tv-mode table.scoretable tbody tr:nth-child(even) { background: rgba(255, 255, 255, 0.13); }
 body.tv-mode table.scoretable tbody tr.cutline > td {
     border-bottom: 6px solid var(--spc-gold) !important;
+    padding-bottom: 12px;
 }
 body.tv-mode table.scoretable tbody tr.cutline-caption > td {
     background: var(--spc-gold) !important;
-    color: #1c1300;
-    font-size: 15px;
+    color: #0a1428;
+    font-size: 13px;
     letter-spacing: 4px;
-    padding: 10px 8px;
+    padding: 8px 6px;
+    font-weight: 800;
+    border-top: none;
 }
-body.tv-mode .group-title {
-    background: transparent;
-    color: var(--spc-gold);
-    font-size: 20px;
-    padding: 6px 0;
-    letter-spacing: 3px;
-}
-body.tv-mode .site-footer {
-    background: transparent;
-    color: rgba(255,255,255,.55);
-    border-top-color: rgba(255,255,255,.10);
-    font-size: 14px;
-}
-body.tv-mode .site-footer .socials { display: none; }
-body.tv-mode .site-nav { display: none; }
-body.tv-mode nav { display: none; }
 
 /* Split layout: two tables side by side for large tournaments on small TVs. */
-body.tv-mode.tv-split .site-banner img { max-height: 90px; }   /* compact banner */
-body.tv-mode.tv-split .page { padding: 10px 20px; margin-top: 8px; }
+body.tv-mode.tv-split .page {
+    padding: 10px 20px;
+    margin-top: 8vw;              /* less top-space; banner still visible above */
+}
 body.tv-mode.tv-split .tv-split-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 20px;
+    gap: 16px;
     align-items: start;
 }
-body.tv-mode.tv-split .card { margin-bottom: 0; padding: 10px; }
-body.tv-mode.tv-split table.scoretable { font-size: 20px; }
+body.tv-mode.tv-split .card {
+    margin-bottom: 0;
+    padding: 8px 10px;
+    max-width: none;
+    margin-left: 0;
+    margin-right: 0;
+}
+body.tv-mode.tv-split table.scoretable { font-size: 18px; }
 body.tv-mode.tv-split table.scoretable thead th {
-    font-size: 15px;
-    padding: 8px 8px;
+    font-size: 13px;
+    padding: 8px 6px;
 }
 body.tv-mode.tv-split table.scoretable tbody td {
-    padding: 8px 8px;
-    font-size: 20px;
+    padding: 7px 6px;
+    font-size: 18px;
 }
-body.tv-mode.tv-split table.scoretable tbody tr.cutline > td { border-bottom-width: 4px !important; padding-bottom: 8px; }
+body.tv-mode.tv-split table.scoretable tbody td.num strong { font-size: 18px; }
+body.tv-mode.tv-split table.scoretable tbody tr.cutline > td {
+    border-bottom-width: 4px !important;
+    padding-bottom: 8px;
+}
 body.tv-mode.tv-split table.scoretable tbody tr.cutline-caption > td {
-    font-size: 11px;
+    font-size: 10px;
     letter-spacing: 2px;
-    padding: 6px 4px;
+    padding: 5px 4px;
 }
-/* Slightly more contrast between rows for 10-foot viewing. */
-body.tv-mode.tv-split table.scoretable tbody tr:nth-child(odd)  { background: rgba(255, 255, 255, 0.05); }
-body.tv-mode.tv-split table.scoretable tbody tr:nth-child(even) { background: rgba(255, 255, 255, 0.14); }
 
 /* Responsive ----------------------------------------------- */
 @media (max-width: 740px) {

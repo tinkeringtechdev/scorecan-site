@@ -635,6 +635,31 @@ body.tv-mode .site-nav    { display: none; }
 body.tv-mode nav          { display: none; }
 body.tv-mode .site-footer { display: none; }
 
+/* Big pill switcher between Standings / Playoff on the TV view */
+body.tv-mode .tv-switcher {
+    display: flex;
+    justify-content: center;
+    gap: 14px;
+    margin: 0 0 16px;
+}
+body.tv-mode .tv-switcher a {
+    padding: 8px 22px;
+    border-radius: 999px;
+    background: rgba(8, 18, 40, 0.85);
+    color: #fff;
+    border: 2px solid var(--spc-gold);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    font-size: 13px;
+    text-decoration: none;
+}
+body.tv-mode .tv-switcher a.active {
+    background: var(--spc-gold);
+    color: #0a1428;
+}
+body.tv-mode .tv-switcher a:hover { text-decoration: none; }
+
 body.tv-mode .page {
     max-width: 100%;
     margin: 13vw auto 20px;      /* leave the banner top visible above the tables */
